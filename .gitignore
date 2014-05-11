@@ -1,1 +1,7 @@
-docs/_build/doctrees
+*.pyc
+*~
+*.sublime-workspace
+
+build/
+pages/
+doc/
