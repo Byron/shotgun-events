@@ -1,0 +1,20 @@
+site_name: shotgun-events
+site_url: https://byron.github.io/shotgun-events
+site_description: A daemon distributing shotgun events to it's plugin event handlers
+
+repo_url: https://github.com/Byron/shotgun-events
+dev_addr: 127.0.0.1:10000
+
+docs_dir: ../../src/md
+site_dir: ../../doc/mkdocs/html
+
+pages:
+- ['index.md', 'Home']
+- ['installation.md', 'Setup', 'Installation']
+- ['configuration.md', 'Setup', 'Configuration']
+- ['API.md', 'Usage', 'API']
+- ['tech.md', 'Usage', 'Plugins']
+
+theme: yeti
+
+copyright: Copyright &copy; 2010, Oblique FX and &copy; 2014, <a href="https://www.linkedin.com/in/sebastianthiel">Sebastian Thiel</a>.
