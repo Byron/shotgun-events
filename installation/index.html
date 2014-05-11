@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://byron.github.io/shotgun-events/installation/">
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Installation - shotgun-events</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">shotgun-events</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li class="active">
+                            <a href="./">Installation</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../configuration/">Configuration</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../API/">API</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../tech/">Plugins</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="..">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../configuration/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/Byron/shotgun-events">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#installation">Installation</a></li>
+        
+            <li><a href="#system-requirements">System Requirements</a></li>
+        
+            <li><a href="#installing-the-shotgun-api">Installing the Shotgun API</a></li>
+        
+            <li><a href="#installing-shotgunevents">Installing shotgunEvents</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="installation">Installation</h1>
+<p>The following guide will help you setup shotgunEvents for your studio.</p>
+<p><a id="System_Requirements"></a></p>
+<h2 id="system-requirements">System Requirements</h2>
+<p>The daemon can run on any machine that has Python installed and has network
+access to your Shotgun server. It does <strong>not</strong> need to run on the Shotgun server
+itself. In fact, if you are using the hosted version of Shotgun, this isn't
+an option. However, you may run it on your Shotgun server if you like. Otherwise,
+any server will do.</p>
+<ul>
+<li>Python v2.4-v2.7</li>
+<li><a href="https://github.com/shotgunsoftware/python-api">Shotgun Python API</a> v3.0+</li>
+<li>Network access to your Shotgun server</li>
+</ul>
+<p><a id="Installing_Shotgun_API"></a></p>
+<h2 id="installing-the-shotgun-api">Installing the Shotgun API</h2>
+<p>Assuming Python is already installed on your machine, you now need to install
+the Shotgun Python API so that the Shotgun Event Daemon can use it to connect to your
+Shotgun server. You can do this in a couple of ways:</p>
+<ul>
+<li>place it in the same directory as the Shotgun Event Daemon</li>
+<li>place it in one of the directories specified by the <a href="http://docs.python.org/tutorial/modules.html"><code>PYTHONPATH</code> environment 
+  variable</a>.</li>
+</ul>
+<p>To test that the Shotgun API is installed correctly, from your terminal window:</p>
+<pre class="prettyprint well"><code>$ python -c &quot;import shotgun_api3&quot;
+</code></pre>
+
+<p>You should see no output. If you see something like the output below then you 
+need to make sure your <code>PYTHONPATH</code> is setup correctly or that the Shotgun API
+is located in the current directory.</p>
+<pre class="prettyprint well"><code>$ python -c &quot;import shotgun_api3&quot;
+Traceback (most recent call last):
+File &quot;&lt;string&gt;&quot;, line 1, in &lt;module&gt;
+ImportError: No module named shotgun_api3
+</code></pre>
+
+<p><a id="Installing_shotgunEvents"></a></p>
+<h2 id="installing-shotgunevents">Installing shotgunEvents</h2>
+<p>The location you choose to install shotgunEvents is really up to you. Again, as
+long as Python and the Shotgun API are installed on the machine, and it has
+network access to your Shotgun server, it can run from anywhere. However, it
+makes sense to install it somehwere that is logical to your studio, something
+like <code>/usr/local/shotgun/shotgunEvents</code> seems logical so we'll use that as the
+example from here on out.</p>
+<p>The source and archives are available on GitHub at <a href="">https://github.com/shotgunsoftware/shotgunEvents</a></p>
+<p><strong>Windows Note:</strong> You could use <code>C:\shotgun\shotgunEvents</code> if you have a Windows server but for this documentation we will be using the Linux path.</p>
+<p><a id="Cloning_Source"></a></p>
+<h3 id="cloning-the-source">Cloning the source</h3>
+<p>The easiest way to grab the source if you have <code>git</code> installed on the machine
+is to simply clone the project. This way you can also easily pull in any updates
+that are committed to ensure you stay up to date with bug fixes and new 
+features.</p>
+<pre class="prettyprint well"><code>$ cd /usr/local/shotgun
+$ git clone git://github.com/shotgunsoftware/shotgunEvents.git
+</code></pre>
+
+<p><strong>Warning:</strong> Always make sure you backup your configuration, plugins, and any modifications
+you make to shotgunEvents before pulling in updates from GitHub so you don't 
+lose anything. Or, fork the project yourself so you can maintain your own
+repository of changes :)</p>
+<p><a id="Downloading_Archive"></a></p>
+<h3 id="downloading-the-archive">Downloading the archive</h3>
+<p>If you don't have <code>git</code> on your machine or you simply would rather download
+an archive of the source, you can get things rolling following these steps.</p>
+<ul>
+<li>head over to <a href="">https://github.com/shotgunsoftware/shotgunEvents/archives/master</a></li>
+<li>download the source in the format you want</li>
+<li>save it to your machine</li>
+<li>extract the files to the <code>/usr/local/shotgun</code> directory</li>
+<li>rename the <code>/usr/local/shotgun/shotgunsoftware-shotgunEvents-xxxxxxx</code> directory 
+  to <code>/usr/local/shotgun/shotgunEvents</code></li>
+</ul>
+<h4 id="extracting-the-archive-into-usrlocalshotgun">Extracting the archive into <code>/usr/local/shotgun</code>.</h4>
+<p>For .tar.gz archives</p>
+<pre class="prettyprint well"><code>$ tar -zxvf shotgunsoftware-shotgunEvents-v0.9-12-g1c0c3eb.tar.gz -C /usr/local/shotgun
+</code></pre>
+
+<p>For .zip archives</p>
+<pre class="prettyprint well"><code>$ unzip shotgunsoftware-shotgunEvents-v0.9-12-g1c0c3eb.zip -d /usr/local/shotgun
+</code></pre>
+
+<p>Then you can rename the GitHub-assigned directory name to <code>shotgunEvents</code></p>
+<pre class="prettyprint well"><code>$ mv shotgunsoftware-shotgunEvents-1c0c3eb shotgunEvents
+</code></pre>
+
+<p>Now you should now have something like this</p>
+<pre class="prettyprint well"><code>$ ls -l /usr/local/shotgun/shotgunEvents
+total 16
+-rw-r--r--  1 kp  wheel  1127 Sep  1 17:46 LICENSE
+-rw-r--r--  1 kp  wheel   268 Sep  1 17:46 README.mkd
+drwxr-xr-x  9 kp  wheel   306 Sep  1 17:46 docs
+drwxr-xr-x  6 kp  wheel   204 Sep  1 17:46 src
+</code></pre>
+
+<p><a id="Windows_Specifics"></a></p>
+<h3 id="windows-specifics">Windows specifics</h3>
+<p>You will need one of the following on your Windows system:</p>
+<ul>
+<li>Python with <a href="http://sourceforge.net/projects/pywin32/">PyWin32</a> installed</li>
+<li><a href="http://www.activestate.com/activepython">Active Python</a></li>
+</ul>
+<p>Active Python ships with the PyWin32 module which is required for integrating the Shotgun Event Daemon with Windows' Service architecture.</p>
+<p>You can then install the deamon as a service by running the following command (we are assuming that <code>C:\Python27_32\python.exe</code> is the path to your Python executable, adjust accrodingly):</p>
+<pre class="prettyprint well"><code>&gt; C:\Python27_32\python.exe shotgunEventDaemon.py install
+</code></pre>
+
+<p>Or remove it with:</p>
+<pre class="prettyprint well"><code>&gt; C:\Python27_32\python.exe shotgunEventDaemon.py remove
+</code></pre>
+
+<p>Starting and stopping the service can be achieved through the normal service management tools or via the command line with:</p>
+<pre class="prettyprint well"><code>&gt; C:\Python27_32\python.exe shotgunEventDaemon.py start
+&gt; C:\Python27_32\python.exe shotgunEventDaemon.py stop
+</code></pre>
+
+</div>
+        </div>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

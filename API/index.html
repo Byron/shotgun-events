@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://byron.github.io/shotgun-events/API/">
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>API - shotgun-events</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">shotgun-events</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../installation/">Installation</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../configuration/">Configuration</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li class="active">
+                            <a href="./">API</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../tech/">Plugins</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="../configuration/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../tech/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/Byron/shotgun-events">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#api">API</a></li>
+        
+            <li><a href="#registercallbacks">registerCallbacks</a></li>
+        
+            <li><a href="#registrar">Registrar</a></li>
+        
+            <li><a href="#callback">Callback</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="api">API</h1>
+<p><a id="registerCallbacks"></a></p>
+<h2 id="registercallbacks">registerCallbacks</h2>
+<p>A global level function in all plugins that is used to tell the framework about
+event processing entry points in the plugin.</p>
+<h4 id="registercallbacksreg">registerCallbacks(reg)</h4>
+<ul>
+<li>reg: The <a href="#wiki-Registrar"><code>Registrar</code></a> you will interact with to tell the framework which functions to call.</li>
+</ul>
+<p><a id="Registrar"></a></p>
+<h2 id="registrar">Registrar</h2>
+<p>The Registrar is the object used to tell the framework how to interact with a plugin. It is passed to the <a href="#wiki-registerCallbacks"><code>registerCallbacks</code></a> function.</p>
+<h3 id="attributes">Attributes</h3>
+<p><a id="logger"></a></p>
+<h4 id="logger">logger</h4>
+<p>See <a href="#wiki-getLogger"><code>getLogger</code></a>.</p>
+<h3 id="methods">Methods</h3>
+<p><a id="getLogger"></a></p>
+<h4 id="getlogger">getLogger</h4>
+<p>Get the python Logger object used to log messages from within the plugin.</p>
+<p>You can access this through the <a href="#wiki-logger"><code>logger</code></a> property as well.</p>
+<h4 id="setemailsemails">setEmails(*emails)</h4>
+<p>Set the emails that should receive error and critical notices when
+something bad happens in this plugin or any of its callbacks.</p>
+<p>To send emails to default addresses as specified in the configuration file (default)</p>
+<pre class="prettyprint well"><code class="python">reg.setEmails(True)
+</code></pre>
+
+<p>To disable emails (this is not suggested as you won't get error messages)</p>
+<pre class="prettyprint well"><code class="python">reg.setEmails(False)
+</code></pre>
+
+<p>To send emails to specific addresses use</p>
+<pre class="prettyprint well"><code class="python">reg.setEmails('user1@domain.com')
+</code></pre>
+
+<p>or</p>
+<pre class="prettyprint well"><code class="python">reg.setEmails('user1@domain.com', 'user2@domain.com')
+</code></pre>
+
+<p><a id="registerCallback"></a></p>
+<h4 id="registercallbacksgscriptname-sgscriptkey-callback-matcheventsnone-argsnone-stoponerrortrue">registerCallback(sgScriptName, sgScriptKey, callback, matchEvents=None, args=None, stopOnError=True)</h4>
+<p>Register a callback into the engine for this plugin.</p>
+<ul>
+<li><code>sgScriptName</code>: The name of the script taken from the Shotgun scripts page.</li>
+<li><code>sgScriptKey</code>: The application key for the script taken from a Shotgun script page.</li>
+<li><code>callback</code>: A function or an object with a <code>__call__</code> method. See <a href="#wiki-exampleCallback"><code>exampleCallback</code></a>.</li>
+<li><code>matchEvents</code>: A filter of events you want to have passed to your callback.</li>
+<li><code>args</code>: Any object you want the framework to pass back into your callback.</li>
+<li><code>stopOnError</code>: Boolean, should an exception in this callback halt processing of events by all callbacks in this plugin. Default is <code>True</code>.</li>
+</ul>
+<p>The <code>sgScriptName</code> is used to identify the plugin to Shotgun. Any name can be shared across any number of callbacks or be unique for a single callback.</p>
+<p>The <code>sgScriptKey</code> is used to identify the plugin to Shotgun and should be the appropriate key for the specified <code>sgScriptName</code>.</p>
+<p>The specified callback object will be invoked when an event that matches your filter needs processing. Although any callable should be able to run, using a class here is not suggested. Use of a function or an instance with a <code>__call__</code> method is more appropriate.</p>
+<p>The <code>matchEvent</code> argument is a filter that allows you to specify which events the callback being registered is interrested in. If <code>matchEvents</code> is not specified or None is specified, all events will be passed to the callback. Otherwise each key in the <code>matchEvents</code> filter is an event type while each value is a list of possible attribute names.</p>
+<pre class="prettyprint well"><code class="python">matchEvents = {
+    'Shotgun_Task_Change': ['sg_status_list'],
+}
+</code></pre>
+
+<p>You can have multiple event types or attribute names</p>
+<pre class="prettyprint well"><code class="python">matchEvents = {
+    'Shotgun_Task_Change': ['sg_status_list'],
+    'Shotgun_Version_Change': ['description', 'sg_status_list']
+}
+</code></pre>
+
+<p>You can filter on any event type that has a given attribute name</p>
+<pre class="prettyprint well"><code class="python">matchEvents = {
+    '*': ['sg_status_list'],
+}
+</code></pre>
+
+<p>You can also filter on any attribute name for a given event type</p>
+<pre class="prettyprint well"><code class="python">matchEvents = {
+    'Shotgun_Version_Change': ['*']
+}
+</code></pre>
+
+<p>Although the following is valid and functionally equivalent to specifying nothing, it's just really useless</p>
+<pre class="prettyprint well"><code class="python">matchEvents = {
+    '*': ['*']
+}
+</code></pre>
+
+<p>The <code>args</code> argument will not be used by the event framework itself but
+will simply be passed back to your callback without any modification.</p>
+<p><strong>Note:</strong> The point of the <code>args</code> argument is for you to be able to process time consuming stuff in the <a href="#wiki-registerCallbacks"><code>registerCallbacks</code></a> function and have it passed back to you at event processing time.</p>
+<p>Another use of the <code>args</code> argument could be to pass in a common mutable, a <code>dict</code> for example, to multiple callbacks to have them share data.</p>
+<p>The <code>stopOnError</code> argument tells the system if an exception in this callback can
+cause event processing to stop for all callbacks in the plugin. By default this
+is <code>True</code> but can be switched to <code>False</code>. You will still get mail notifications
+of errors should there be any but processing of events will not stop. Being a per
+callback setting you can have some critical callbacks for whom this is <code>True</code> but
+others for whom this is <code>False</code>.</p>
+<p><a id="Callback"></a></p>
+<h2 id="callback">Callback</h2>
+<p>Any plugin entry point registered by <a href="#wiki-registerCallback"><code>Registrar.registerCallback</code></a> is generally a global level function that looks like this:</p>
+<p><a id="exampleCallback"></a></p>
+<h4 id="examplecallbacksg-logger-event-args">exampleCallback(sg, logger, event, args)</h4>
+<ul>
+<li><code>sg</code>: A Shotgun connection instance.</li>
+<li><code>logger</code>: A Python logging.Logger object preconfigured for you.</li>
+<li><code>event</code>: A Shotgun event to process.</li>
+<li><code>args</code>: The args argument specified at callback registration time.</li>
+</ul>
+<p><strong>Note:</strong> Implementing a callback as a <code>__call__</code> method on an object instance is possible but left as an exercise for the user.</p>
+</div>
+        </div>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

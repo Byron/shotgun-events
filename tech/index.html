@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://byron.github.io/shotgun-events/tech/">
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Plugins - shotgun-events</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">shotgun-events</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../installation/">Installation</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../configuration/">Configuration</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../API/">API</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="./">Plugins</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="../API/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/Byron/shotgun-events">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#technical-overview">Technical Overview</a></li>
+        
+            <li><a href="#plugin-processing-order">Plugin Processing Order</a></li>
+        
+            <li><a href="#sharing-state">Sharing state</a></li>
+        
+            <li><a href="#error-messages">Error Messages</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="technical-overview">Technical Overview</h1>
+<p><a id="Plugin_Processing_Order"></a></p>
+<h2 id="plugin-processing-order">Plugin Processing Order</h2>
+<p>Each event is always processed in the same predictable order so if any plugins
+or callbacks are co-dependant, your can safely organize their processing.</p>
+<p>The configuration file specifies a <code>paths</code> config that contains one or multiple
+plugin locations. The earlier the location in the list the earlier the contained
+plugins will be processed.</p>
+<p>Each plugin within a plugin path is then processed in ascending alphabetical order.</p>
+<p><strong>Note:</strong> Internally the filenames are put in a list and sorted.</p>
+<p>Finally, each callback registered by a plugin is called in registration order.
+First resgistered, first run.</p>
+<p>It is suggested to keep any functionality that needs to share state somehow in
+the same plugin as one or multiple callbacks.</p>
+<p><a id="Sharing_State"></a></p>
+<h2 id="sharing-state">Sharing state</h2>
+<p>If multiple callbacks need to share state many options may be used.</p>
+<ul>
+<li>Global variables. Ick. Please don't do this.</li>
+<li>An imported module that holds the state information. Ick, but a bit better
+  than simple globals.</li>
+<li>A mutable passed in the <code>args</code> argument when calling
+  <a href="API#wiki-registerCallback"><code>Registrar.registerCallback</code></a>. A state object of your design or something
+  as simple as a dict. Preferred.</li>
+<li>Implement callbacks as <code>__call__</code> on object instances and provide some shared
+  state object at callback object initialization. Most powerful, most convoluted
+  and might be a bit redundant vs. <code>args</code> argument method.</li>
+</ul>
+<p><a id="Error_Messages"></a></p>
+<h2 id="error-messages">Error Messages</h2>
+<p>Here is a brief overview of some error and warning message that you may see appear in your logs depending on your configured logging level.</p>
+<h3 id="timeout-elapsed-on-backlog-event-id">Timeout elapsed on backlog event id</h3>
+<p>Each event that occurs in Shotgun (field update, entity creation, entity retirement, etc) has a unique id number to its event log entry. Sometimes there are gaps in the id number sequence. These gaps can occur for many reasons, one of them being a large database transaction that has yet to complete.</p>
+<p>Every time a gap in the event log sequence is encountered the "missing" event ids are put into a backlog for later processing. This allows for the event daemon to process the events from a long database transaction once it has finished.</p>
+<p>Sometimes the gap in the event log sequence will never be filled in such as a failed transaction or reverted page setting modifications. In this case the event log entry id number that was put in the backlog will eventually hit a timeout (5 minutes) and the system will stop waiting for this event to appear. It is at this time that you will see a "Timeout elapsed on backlog event id #####" message.</p>
+</div>
+        </div>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

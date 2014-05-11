@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://byron.github.io/shotgun-events/configuration/">
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Configuration - shotgun-events</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">shotgun-events</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../installation/">Installation</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="./">Configuration</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../API/">API</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../tech/">Plugins</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="../installation/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../API/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/Byron/shotgun-events">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#configuration">Configuration</a></li>
+        
+            <li><a href="#edit-shotguneventdaemonconf">Edit shotgunEventDaemon.conf</a></li>
+        
+            <li><a href="#testing-the-daemon">Testing the Daemon</a></li>
+        
+            <li><a href="#running-the-daemon">Running the daemon</a></li>
+        
+            <li><a href="#common-errors">Common Errors</a></li>
+        
+            <li><a href="#list-of-configuration-file-settings">List of Configuration File Settings</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="configuration">Configuration</h1>
+<p>The following guide will help you configure shotgunEvents for your studio.</p>
+<p>Most of the configuration for shotgunEvents is controlled by the <code>shotgunEventDaemon.conf</code>
+file. In this file, you'll find several settings you can modify to match your
+needs. Most of them have defaults that will work fine for most studios, however
+there are some settings that must be configured (specifically, your Shotgun
+server url, script name, and application key so the shotgunEventDaemon can 
+connect to your Shotgun server).</p>
+<p><strong>Windows note:</strong> Windows users will need to change all the paths in the configuration file for Windows equivalents. We suggest to keep all paths, including logging, under one single location for the sake of simplicity. This documentation tends to refer to <code>C:\shotgun\shotgunEvents</code> when mentioning Windows paths.</p>
+<p><a id="Edit_shotgunEventDaemon_conf"></a></p>
+<h2 id="edit-shotguneventdaemonconf">Edit shotgunEventDaemon.conf</h2>
+<p>Once you have installed shotgunEvents, the next step is to open the 
+<code>shotgunEventDaemon.conf</code> file in a text editor and modify the settings to 
+match your studios needs. The defaults will be fine for most studios, however
+there are some settings that have no defaults that will need to be provided by
+you before you can run the daemon. </p>
+<p>The items your <em>must</em> provide are</p>
+<ul>
+<li>your Shotgun server url</li>
+<li>the Script name and Application key for connecting to Shotgun</li>
+<li>the full path to your plugins for the shotgunEventDaemon to run</li>
+</ul>
+<p>Optionally, you can also specify an SMTP server and email-specific settings in
+order to setup email notification for errors. While this is optional, if you 
+choose to set this up, you must provide all of the configuration values in the
+email section.</p>
+<p><a id="Shotgun_Settings"></a></p>
+<h3 id="shotgun-settings">Shotgun Settings</h3>
+<p>Underneath the <code>[shotgun]</code> section, replace the default tokens with the correct
+values for <code>server</code>, <code>name</code>, and <code>key</code>. These should be the same values you'd
+provide to a standard API script connecting to Shotgun.</p>
+<p>Example</p>
+<pre class="prettyprint well"><code>server: https://awesome.shotgunstudio.com
+name: shotgunEventDaemon
+key: e37d855e4824216573472846e0cb3e49c7f6f7b1
+</code></pre>
+
+<p><a id="Plugin_Settings"></a></p>
+<h3 id="plugin-settings">Plugin Settings</h3>
+<p>You will need to tell the shotgunEventDaemon where to look for plugins to run.
+Under the <code>[plugins]</code> section replace the default token with the correct  value
+for <code>paths</code>.</p>
+<p>You can specify multiple locations (which may be useful if you have multiple
+departments or repositories using the daemon). The value here must be a full
+path to a readable existing directory.</p>
+<p>Example</p>
+<pre class="prettyprint well"><code>paths: /usr/local/shotgun/shotgunEvents/plugins
+</code></pre>
+
+<p>When you're first getting started, a good plugin to test with is the
+<code>logArgs.py</code> plugin located in the
+<code>/usr/local/shotgun/shotgunEvents/src/examplePlugins</code> directory. Copy that into
+the plugins folder you specified and we'll use that for testing things.</p>
+<p><a id="Location_of_shotgunEventDaemon_conf"></a></p>
+<h3 id="location-of-shotguneventdaemonconf">Location of shotgunEventDaemon.conf</h3>
+<p>By default, the daemon will look for the shotgunEventDaemon.conf file in the 
+same directory that shotgunEventDaemon.py is in, and in the <code>/etc</code> directory.
+If you need to put the conf file in another directory, it's recommended you 
+create a symlink to it from the current directory.</p>
+<p><strong>Note:</strong> If for some reason the above won't work for you, the search paths for the
+config file are located in the <code>_getConfigPath()</code> function at the bottom of
+the <code>shotgunEventDaemon.py</code> script</p>
+<p><strong>Windows Note:</strong> The <code>/etc</code> doesn't exist on Windows so the configuration file should be put in the same directory as the Python files.</p>
+<p><a id="Testing_the_Daemon"></a></p>
+<h2 id="testing-the-daemon">Testing the Daemon</h2>
+<p>Daemons can be difficult to test since they run in the background. There isn't
+always an obvious way to see what they're doing. Lucky for us, the 
+shotgunEventDaemon has an option to run it as a foreground process. Now that
+we have done the minimum required setup, let's go ahead and test the daemon
+and see how things go.</p>
+<p><strong>Note:</strong> The default values used here may require root access (for example, to write to 
+the /var/log directory). The examples provided use are run using <code>sudo</code> to 
+accomodate this.</p>
+<pre class="prettyprint well"><code>$ sudo ./shotgunEventDaemon.py foreground
+INFO:engine:Using Shotgun version 3.0.8
+INFO:engine:Loading plugin at /usr/local/shotgun/shotgunEvents/src/examplePlugins/logArgs.py
+INFO:engine:Last event id (248429) from the Shotgun database.
+</code></pre>
+
+<p>You should see the lines above when you start the script (some of the details
+may differ obviously). If you get any errors, the script will terminate since we 
+opted to run it in the foreground we'll see that happen. Some common errors are 
+displayed below if you get stuck.</p>
+<p>The <code>logArgs.py</code> plugin simply takes the event that occured in Shotgun and 
+passes it to the logger. Not very exciting but it's a simple way to ensure that
+the script is running and the plugin is working. If you're at a busy studio,
+you may have already noticed a rapid stream of messages flowing by. If not,
+login to your Shotgun server in your web browser and change some values or create 
+something. You should see log statements printed out to your terminal window 
+corresponding to the type of event you generated with your changes. </p>
+<p>NOTE: there are variables in the logArgs.py file that need to be filled in with appropriate values. '$DEMO_SCRIPT_NAMES$' and '$DEMO_API_KEY$' must be edited to contain the same values that were used in the shotgunEventDaemon.conf file in order for the logging to function correctly.</p>
+<p>If you don't see anything logged to the logfile, check your log-related settings 
+in shotgunEventDaemon.conf to ensure that the <code>logging</code> value is set to log 
+INFO level messages</p>
+<pre class="prettyprint well"><code>logging: 20
+</code></pre>
+
+<p>and the logArgs plugin is also configured to show INFO level messages. There is 
+a line at the end of the registerCallbacks() method that should read</p>
+<pre class="prettyprint well"><code class="python">reg.logger.setLevel(logging.INFO)
+</code></pre>
+
+<p>Assuming all looks good, to stop the shotgunEventDaemon process, simply type 
+<code>&lt;ctrl&gt;-c</code> in the terminal and you should see the script terminate.</p>
+<p><a id="Running_the_Daemon"></a></p>
+<h2 id="running-the-daemon">Running the daemon</h2>
+<p>Assuming all went well with your testing, we can now run the daemon as intended,
+in the background.</p>
+<pre class="prettyprint well"><code>$ sudo ./shotgunEventDaemon.py start
+</code></pre>
+
+<p>You should see no output and control should have been returned to you in the
+terminal. We can make sure that things are running well in 2 ways. The first 
+would be to check the running processes and see if this is one of them.</p>
+<pre class="prettyprint well"><code>$ ps -aux | grep shotgunEventDaemon
+kp              4029   0.0  0.0  2435492    192 s001  R+    9:37AM   0:00.00 grep shotgunEventDaemon
+root            4020   0.0  0.1  2443824   4876   ??  S     9:36AM   0:00.02 /usr/bin/python ./shotgunEventDaemon.py start
+</code></pre>
+
+<p>We can see by the second line returned that the daemon is running. The first
+line is matching the command we just ran. So we know it's running, but to ensure 
+that it's <em>working</em> and the plugins are doing what they're supposed to, we can 
+look at the log files and see if there's any output there.</p>
+<pre class="prettyprint well"><code>$ sudo tail -f /var/log/shotgunEventDaemon/shotgunEventDaemon
+2011-09-09 09:42:44,003 - engine - INFO - Using Shotgun version 3.0.8
+2011-09-09 09:42:44,006 - engine - INFO - Loading plugin at /usr/local/shotgun/shotgunEvents/src/plugins/logArgs.py
+2011-09-09 09:42:44,199 - engine - DEBUG - Starting the event processing loop.
+</code></pre>
+
+<p>Go back to your web browser and make some changes to an entity. Then head back
+to the terminal and look for output. You should see something like the following</p>
+<pre class="prettyprint well"><code>2011-09-09 09:42:44,003 - engine - INFO - Using Shotgun version 3.0.8
+2011-09-09 09:42:44,006 - engine - INFO - Loading plugin at /usr/local/shotgun/shotgunEvents/src/plugins/logArgs.py
+2011-09-09 09:42:44,199 - engine - DEBUG - Starting the event processing loop.
+2011-09-09 09:45:31,228 - plugin.logArgs.logArgs - INFO - {'attribute_name': 'sg_status_list', 'event_type': 'Shotgun_Shot_Change', 'entity': {'type': 'Shot', 'name': 'bunny_010_0010', 'id': 860}, 'project': {'type': 'Project', 'name': 'Big Buck Bunny', 'id': 65}, 'meta': {'entity_id': 860, 'attribute_name': 'sg_status_list', 'entity_type': 'Shot', 'old_value': 'omt', 'new_value': 'ip', 'type': 'attribute_change'}, 'user': {'type': 'HumanUser', 'name': 'Kevin Porterfield', 'id': 35}, 'session_uuid': '450e4da2-dafa-11e0-9ba7-0023dffffeab', 'type': 'EventLogEntry', 'id': 276560}
+</code></pre>
+
+<p>The exact details of your output will differ, but what you should see is that
+the plugin has done what it is supposed to do, that is, log the event to the
+logfile. Again, if you don't see anything logged to the logfile, check your
+log-related settings in shotgunEventDaemon.conf to ensure that the <code>logging</code>
+value is set to log INFO level messages and your logArgs plugin is also configured
+to show INFO level messages.</p>
+<p><a id="A_Note_About_Logging"></a></p>
+<h3 id="a-note-about-logging">A Note About Logging</h3>
+<p>It should be noted that log rotation is a feature of the shotgun daemon. Log are
+rotated at midnight every night and ten daily files are kept per plugin.</p>
+<p><a id="Common_Errors"></a></p>
+<h2 id="common-errors">Common Errors</h2>
+<p>The following are a few of the common errors that you can run into and how to 
+resolve them. If you get really stuck, feel free to contact the Shotgun Software
+team (support@shotgunsoftware.com) and we'll help you out.</p>
+<p><strong>Invalid path: $PLUGIN_PATHS$</strong></p>
+<p>You need to specify the path to your plugins in the shotgunEventDaemon.conf file.</p>
+<p><strong>Permission denied: '/var/log/shotgunEventDaemon'</strong></p>
+<p>The daemon couldn't open the logfile for writing.</p>
+<p>You may need to run the daemon with <code>sudo</code> or as a user that has permissions to 
+write to the log file specified by the <code>logPath</code> and <code>logFile</code> settings in
+shotgunEventDaemon.conf. (the default location is <code>/var/log/shotgunEventDaemon</code>
+which is usually owned by root.</p>
+<p><strong>ImportError: No module named shotgun_api3</strong></p>
+<p>The Shotgun API is not installed. Make sure it is either located in the current
+directory or it is in a directory in your <code>PYTHONPATH</code>.</p>
+<p>If you have to run as sudo and you think you have the <code>PYTHONPATH</code> setup
+correctly, remember that sudo resets the envirnment variables. You can edit the
+sudoers  file to preserve the <code>PYTHONPATH</code> or run sudo -e(?)</p>
+<p><a id="List_of_Configuration_File_Settings"></a></p>
+<h2 id="list-of-configuration-file-settings">List of Configuration File Settings</h2>
+<p><a id="Daemon_Settings"></a></p>
+<h3 id="daemon-settings">Daemon Settings</h3>
+<p>The following are general daemon operational settings.</p>
+<p><strong>pidFile</strong></p>
+<p>The pidFile is the location where the daemon will store its process id while it
+is running. If this file is removed while the daemon is running, it will shutdown 
+cleanly after the next pass through the event processing loop.</p>
+<p>The directory must already exist and be writable. You can name the file whatever
+you like but we strongly recommend you use the default name as it matches with
+the process that is running</p>
+<pre class="prettyprint well"><code>pidFile: /var/log/shotgunEventDaemon.pid
+</code></pre>
+
+<p><strong>eventIdFile</strong></p>
+<p>The eventIdFile points to the location where the daemon will store the id of the 
+last processed Shotgun event. This will allow the daemon to pick up where it left 
+off when it was last shutdown, thus it won't miss any events. If you want to 
+ignore any events since the last daemon shutdown, remove this file before
+starting up the daemon and the daemon will process only new events created after 
+startup. </p>
+<p>This file keeps track of the last event id for <em>each</em> plugin and stores this
+information in picked format.</p>
+<pre class="prettyprint well"><code>eventIdFile: /var/log/shotgunEventDaemon.id
+</code></pre>
+
+<p><strong>logMode</strong></p>
+<p>The logging mode can be set to one of two values:</p>
+<ul>
+<li><strong>0</strong> = all log messages in the main log file</li>
+<li><strong>1</strong> = one main file for the engine, one file per plugin</li>
+</ul>
+<p>When using a value of <strong>1</strong>, the log messages generated by the engine itself
+will be logged to the main logfile specified by the <code>logFile</code> config setting.
+Any messages logged by a plugin will be placed in a file named 
+<code>plugin.&lt;plugin_name&gt;</code>.</p>
+<pre class="prettyprint well"><code>logMode: 1
+</code></pre>
+
+<p><strong>logPath</strong></p>
+<p>The path where to put log files (both for the main engine and plugin log 
+files). The name of the main log file is controlled by the <code>logFile</code> 
+setting below.</p>
+<pre class="prettyprint well"><code>logPath: /var/log/shotgunEventDaemon
+</code></pre>
+
+<p><strong>Note:</strong> The shotgunEventDaemon will have to have write permissions for this
+directory. In a typical setup, the daemon is set to run automatically when the
+machine starts up and is given root priveleges at that point.</p>
+<p><strong>logFile</strong></p>
+<p>The name of the main daemon log file. Logging is configured to store up to  10
+log files that rotate every night at midnight.</p>
+<pre class="prettyprint well"><code>logFile: shotgunEventDaemon
+</code></pre>
+
+<p><strong>logging</strong></p>
+<p>The threshold level for log messages sent to the log files. This value is the 
+default for the main dispatching engine and can be overriden on a per
+plugin basis. This value is simply passed to the Python logging module. The 
+most common values are:
+- <strong>10:</strong> Debug
+- <strong>20:</strong> Info
+- <strong>30:</strong> Warnings
+- <strong>40:</strong> Error
+- <strong>50:</strong> Critical</p>
+<pre class="prettyprint well"><code>logging: 20
+</code></pre>
+
+<p><strong>conn_retry_sleep</strong></p>
+<p>If the connection to Shotgun fails, number of seconds to wait until the 
+connection is re-attempted. This allows for occasional network hiccups, 
+server restarts, application maintenance, etc.</p>
+<pre class="prettyprint well"><code>conn_retry_sleep = 60
+</code></pre>
+
+<p><strong>max_conn_retries</strong></p>
+<p>Number of times to retry the connection before logging an error level message 
+(which potentially sends an email if email notification is configured below). </p>
+<pre class="prettyprint well"><code>max_conn_retries = 5
+</code></pre>
+
+<p><strong>fetch_interval</strong></p>
+<p>Number of seconds to wait before requesting new events after each batch of 
+events is done processing. This setting generally doesn't need to be 
+adjusted.</p>
+<pre class="prettyprint well"><code>fetch_interval = 5
+</code></pre>
+
+<p><a id="Shotgun_Settings"></a></p>
+<h3 id="shotgun-settings_1">Shotgun Settings</h3>
+<p>The following are settings related to your Shotgun instance.</p>
+<p><strong>server</strong></p>
+<p>The url for the Shotgun server to connect to.</p>
+<pre class="prettyprint well"><code>server: $SHOTGUN_URL$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $SHOTGUN_URL$ token with 
+the url for your Shotgun server (ie. https://awesome.shotgunstudio.com)</p>
+<p><strong>name</strong></p>
+<p>The Shotgun Script name the shotgunEventDaemon should connect with.</p>
+<pre class="prettyprint well"><code>name: $SHOTGUN_SCRIPT_NAME$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $SHOTGUN_SCRIPT_NAME$ 
+token with the Script name for your Shotgun server (ie. <code>shotgunEventDaemon</code>)</p>
+<p><strong>key</strong></p>
+<p>The Shotgun Application Key for the Script name specified above.</p>
+<pre class="prettyprint well"><code>key: $SHOTGUN_API_KEY$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $SHOTGUN_API_KEY$ 
+token with the Application Key for your Script name above (ie. 
+<code>0123456789abcdef0123456789abcdef01234567</code>)</p>
+<p><strong>use_session_uuid</strong></p>
+<p>Sets the session_uuid from every event in the Shotgun instance to propagate in
+any events generated by plugins. This will allow the Shotgun UI to display
+updates that occur as a result of a plugin.</p>
+<pre class="prettyprint well"><code>use_session_uuid: True
+</code></pre>
+
+<ul>
+<li>Shotgun server v2.3+ is required for this feature.</li>
+<li>Shotgun API v3.0.5+ is required for this feature.</li>
+</ul>
+<p><strong>Note:</strong> The Shotgun UI will <em>only</em> show updates live for the browser session that 
+spawned the original event. Other browser windows with the same page open 
+will not see updates live.</p>
+<p><a id="Plugin_Settings_details"></a></p>
+<h3 id="plugin-settings_1">Plugin Settings</h3>
+<p><strong>paths</strong></p>
+<p>A comma delimited list of complete paths where the framework should look for 
+plugins to load. Do not use relative paths.</p>
+<pre class="prettyprint well"><code>paths: $PLUGIN_PATHS$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $PLUGIN_PATHS$
+token with the location(s) of your plugin files (ie.
+<code>/usr/local/shotgun/shotgunEvents/plugins</code> or <code>C:\shotgun\shotgunEvents\plugins</code> on Windows)</p>
+<p><a id="Email_Settings"></a></p>
+<h3 id="email-settings">Email Settings</h3>
+<p>These are used for error reporting because we figured you wouldn't constantly be
+tailing the log and would rather have an active notification system.</p>
+<p>Any error above level 40 (ERROR) will be reported via email if all of the
+settings are provided below.</p>
+<p>All of these values must be provided for there to be email alerts sent out.</p>
+<p><strong>server</strong></p>
+<p>The server that should be used for SMTP connections. The username and password
+values can be uncommented to supply credentials for the SMTP connection. If 
+your server does not use authentication, you shoult comment out the settings 
+for <code>username</code> and <code>password</code></p>
+<pre class="prettyprint well"><code>server: $SMTP_SERVER$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $SMTP_SERVER$
+token with the address of your smtp server (ie. <code>smtp.mystudio.com</code>). </p>
+<p><strong>username</strong></p>
+<p>If your SMTP server requires authentication, uncomment this line and replace the
+$SMTP_USERNAME$ token with the username required to connect to your SMTP server.</p>
+<pre class="prettyprint well"><code>username: $SMTP_USERNAME$
+</code></pre>
+
+<p><strong>password</strong></p>
+<p>If your SMTP server requires authentication, uncomment this line and replace the
+$SMTP_PASSWORD$ token with the password required to connect to your SMTP server.</p>
+<pre class="prettyprint well"><code>password: $SMTP_PASSWORD$
+</code></pre>
+
+<p><strong>from</strong></p>
+<p>The from address that should be used in emails.</p>
+<pre class="prettyprint well"><code>from: $FROM_EMAIL$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $FROM_EMAIL$ token
+with a value (ie. <code>noreply@mystudio.com</code>).</p>
+<p><strong>to</strong></p>
+<p>A comma delimited list of email addresses to whom these alerts should be sent.</p>
+<pre class="prettyprint well"><code>to: $TO_EMAILS$
+</code></pre>
+
+<p><strong>Note:</strong> There is no default value here. You must replace the $TO_EMAILS$ token
+with a value (ie. <code>shotgun_admin@mystudio.com</code>).</p>
+<p><strong>subject</strong></p>
+<p>An email subject prefix that can be used by mail clients to help sort out
+alerts sent by the Shotgun event framework.</p>
+<pre class="prettyprint well"><code>subject: [SG]
+</code></pre>
+
+</div>
+        </div>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

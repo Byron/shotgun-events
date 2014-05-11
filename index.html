@@ -1,242 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="A daemon distributing shotgun events to it's plugin event handlers">
+        
+        <link rel="canonical" href="https://byron.github.io/shotgun-events/">
+        <link rel="shortcut icon" href="./img/favicon.ico">
 
+        <title>shotgun-events</title>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="./css/prettify-1.0.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Shotgun Event Daemon &mdash; Shotgun Events Daemon v0.9 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.9',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Shotgun Events Daemon v0.9 documentation" href="#" />
-    <link rel="next" title="Installation" href="installation.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             accesskey="N">next</a> |</li>
-        <li><a href="#">Shotgun Events Daemon v0.9 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href=".">shotgun-events</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
             
-  <div class="section" id="shotgun-event-daemon">
-<h1>Shotgun Event Daemon<a class="headerlink" href="#shotgun-event-daemon" title="Permalink to this headline">¶</a></h1>
-<p>This software was originaly developed by <a class="reference external" href="http://www.patrickboucher.com">Patrick Boucher</a> with support from <a class="reference external" href="http://rodeofx.com">Rodeo Fx</a> and <a class="reference external" href="http://obliquefx.com">Oblique</a>, it is now part of
-<a class="reference external" href="http://www.shotgunsoftware.com">Shotgun Software</a>&#8216;s <a class="reference external" href="https://github.com/shotgunsoftware">open source initiative</a>.</p>
-<p>This software is provided under the MIT License that can be found in the LICENSE
-file or here: <a class="reference external" href="http://www.opensource.org/licenses/mit-license.php">http://www.opensource.org/licenses/mit-license.php</a></p>
-<div class="section" id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
+            
+                <li class="active">
+                    <a href=".">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="installation/">Installation</a>
+                        </li>
+                    
+                        <li >
+                            <a href="configuration/">Configuration</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="API/">API</a>
+                        </li>
+                    
+                        <li >
+                            <a href="tech/">Plugins</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li class="disabled">
+                    <a rel="next" >
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="installation/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/Byron/shotgun-events">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#requirements">Requirements</a></li>
+        
+    
+        <li class="main "><a href="#installation">Installation</a></li>
+        
+    
+        <li class="main "><a href="#infrastructure">Infrastructure</a></li>
+        
+    
+        <li class="main "><a href="#license">License</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<p>The shotgun event daemon listens to all shotgun events, and distributes them to one or more plugin event handlers. These may register for a particular kind of event to only receive the ones they are interested in.</p>
+<p>Thanks to the daemon, you may focus on what you are interested in: handling an event, without dealing with details such as:</p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#system-requirements">System Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-shotgun-api">Installing Shotgun API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-shotgunevents">Installing shotgunEvents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#cloning-the-source">Cloning the source</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#downloading-the-archive">Downloading the archive</a></li>
+<li>repeat events previously missed (due to system failure, for instance)</li>
+<li>maintain a shotgun connection and reconnect automatically</li>
+<li>run as system service</li>
 </ul>
-</li>
+<p><img alt="under construction" src="https://raw.githubusercontent.com/Byron/bcore/master/src/images/wip.png" /></p>
+<h1 id="requirements">Requirements</h1>
+<ul>
+<li>python 2.6 or 2.7</li>
+<li><a href="https://github.com/Byron/bcore">bcore</a></li>
+<li>a posix compatible platform (e.g. linux, osx) if you want to use the built-in daemonization</li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#edit-shotguneventdaemon-conf">Edit shotgunEventDaemon.conf</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#shotgun-settings">Shotgun Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#plugin-settings">Plugin Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#location-of-shotguneventdaemon-conf">Location of shotgunEventDaemon.conf</a></li>
+<h1 id="installation">Installation</h1>
+<p>Please head over to the <a href="https://github.com/Byron/shotgun-events">distribution</a> for installation instructions.</p>
+<h1 id="infrastructure">Infrastructure</h1>
+<ul>
+<li><strong><a href="https://travis-ci.org/Byron/shotgun-events">Continuous Integration/Quality Assurance</a></strong></li>
+<li><strong><a href="https://github.com/Byron/shotgun-events/issues">Issue Tracker</a></strong></li>
+<li><strong><a href="http://byron.github.io/shotgun-events">Documentation</a></strong></li>
 </ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#testing-the-daemon">Testing the daemon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#running-the-daemon">Running the daemon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#next-steps">Next Steps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#common-errors">Common Errors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#list-of-configuration-file-settings">List of Configuration File Settings</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#daemon-settings">Daemon Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#id1">Shotgun Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#id2">Plugin Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration.html#email-settings">Email Settings</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Plugins</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api.html#registercallbacks-function">registerCallbacks function</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#callbacks">Callbacks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#printing-out-information">Printing out information</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#api">API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api.html#registercallbacks">registerCallbacks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#registrar">Registrar</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#callback">Callback</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="techOverview.html">Technical Details</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="techOverview.html#plugin-processing-order">Plugin processing order</a></li>
-<li class="toctree-l2"><a class="reference internal" href="techOverview.html#sharing-state">Sharing state</a></li>
-</ul>
-</li>
-</ul>
+<h1 id="license">License</h1>
+<p>This software is provided under the MIT License that can be found in the LICENSE
+file or here: <a href="http://www.opensource.org/licenses/mit-license.php">http://www.opensource.org/licenses/mit-license.php</a></p>
 </div>
-</div>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>When you want to access the Shotgun event stream, the preferred way to do so it
-to monitor the events table, get any new events, process them and repeat.</p>
-<p>A lot of stuff is required for this process to work successfully, stuff that may
-not have any direct bearing on the business rules that need to be applied.</p>
-<p>The role of the framework is to keep any tedious monitoring tasks out of the
-hands of the business logic implementor.</p>
-<p>The framework is a daemon process that runs on a server and monitors the Shotgun
-event stream. When events are found, the daemon hands the events out to a series
-of registered plugins. Each plugin can process the event as it wishes.</p>
-<p>The daemon handles:</p>
-<ul class="simple">
-<li>Registering plugins from one or more specified paths.</li>
-<li>Deactivate any crashing plugins.</li>
-<li>Reloading plugins when they change on disk.</li>
-<li>Monitoring the Shotgun event stream.</li>
-<li>Remembering the last processed event id and any backlog.</li>
-<li>Starting from the last processed event id on daemon startup.</li>
-<li>Catching any connection errors.</li>
-<li>Logging information to stdout, file or email as required.</li>
-<li>Creating a connection to Shotgun that will be used by the callback.</li>
-<li>Handing off events to registered callbacks.</li>
-</ul>
-<p>A plugin handles:</p>
-<ul class="simple">
-<li>Registering any number of callbacks into the framework.</li>
-<li>Processing a single event when one is provided by the framework.</li>
-</ul>
-</div>
-<div class="section" id="advantages-of-the-framework">
-<h2>Advantages of the framework<a class="headerlink" href="#advantages-of-the-framework" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>Only deal with a single monitoring mechanism for all scripts, not one per
-script.</li>
-<li>Minimize network and database load (only one monitor that supplies event to
-many event processing plugins).</li>
-</ul>
-</div>
-<div class="section" id="known-issues">
-<h2>Known Issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>When processing a large amount of items through a batch process. The resulting
-events may not be processed. There is code to address this but it is rather new
-and might not be completely bug free.</li>
-</ul>
-<p>If you would like to submit issues please go to the <a class="reference external" href="http://github.com/shotgunsoftware/shotgunEvents/issues">GitHub issues page</a>.</p>
-</div>
-<div class="section" id="going-forward">
-<h2>Going forward<a class="headerlink" href="#going-forward" title="Permalink to this headline">¶</a></h2>
-<p>Here is some stuff that could be changed or added going forward:</p>
-<ul class="simple">
-<li>Parallelize the processing of events. A tough one considering possible event
-dependencies.</li>
-<li>Pass all data to the callbacks using a context object for better future
-scalability.</li>
-<li>Allow for late creation of the Shotgun connections on access by the callback.</li>
-<li>Make config reading more robust.</li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
-</ul>
-</div>
-
-
-          </div>
         </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Shotgun Event Daemon</a><ul>
-<li><a class="reference internal" href="#contents">Contents</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#advantages-of-the-framework">Advantages of the framework</a></li>
-<li><a class="reference internal" href="#known-issues">Known Issues</a></li>
-<li><a class="reference internal" href="#going-forward">Going forward</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
 
-  <h4>Next topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="next chapter">Installation</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             >next</a> |</li>
-        <li><a href="#">Shotgun Events Daemon v0.9 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright 2011, Patrick Boucher.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
-    </div>
-  </body>
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/prettify-1.0.min.js"></script>
+        <script src="./js/base.js"></script>
+    </body>
 </html>
