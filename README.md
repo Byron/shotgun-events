@@ -9,13 +9,14 @@ Thanks to the daemon, you may focus on what you are interested in: handling an e
 
 ![under construction](https://raw.githubusercontent.com/Byron/bcore/master/src/images/wip.png)
 
-
 Requirements
 ============
 
 * python 2.6 or 2.7
-* [bcore](https://github.com/Byron/bcore)
+* [bshotgun](https://github.com/Byron/bshotgun)
 * a posix compatible platform (e.g. linux, osx) if you want to use the built-in daemonization
+* **Development**
+    - [nosetests](https://nose.readthedocs.org/en/latest)
 
 Installation
 ============

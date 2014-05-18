@@ -38,13 +38,13 @@ import sys
 import time
 import types
 import traceback
+import weakref
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
 
-import daemonizer
 import shotgun_api3 as sg
 
 
@@ -57,9 +57,9 @@ Line: %(lineno)d
 %(message)s"""
 
 
-def _setFilePathOnLogger(logger, path):
+def set_file_path_on_logger(logger, path):
     # Remove any previous handler.
-    _removeHandlersFromLogger(logger, logging.handlers.TimedRotatingFileHandler)
+    remove_handlers_from_logger(logger, logging.handlers.TimedRotatingFileHandler)
 
     # Add the file handler
     handler = logging.handlers.TimedRotatingFileHandler(path, 'midnight', backupCount=10)
@@ -67,7 +67,7 @@ def _setFilePathOnLogger(logger, path):
     logger.addHandler(handler)
 
 
-def _removeHandlersFromLogger(logger, handlerTypes=None):
+def remove_handlers_from_logger(logger, handlerTypes=None):
     """
     Remove all handlers or handlers of a specified type from a logger.
 
@@ -84,7 +84,7 @@ def _removeHandlersFromLogger(logger, handlerTypes=None):
             logger.removeHandler(handler)
 
 
-def _addMailHandlerToLogger(logger, smtpServer, fromAddr, toAddrs, emailSubject, username=None, password=None):
+def add_mail_handler_to_logger(logger, smtpServer, fromAddr, toAddrs, emailSubject, username=None, password=None):
     """
     Configure a logger with a handler that sends emails to specified
     addresses.
@@ -186,22 +186,21 @@ class Config(ConfigParser.ConfigParser):
         return path
 
 
-class Engine(daemonizer.Daemon):
+class EventEngine(object):
     """
     The engine holds the main loop of event processing.
     """
 
-    def __init__(self, configPath):
+    def __init__(self):
         """
         """
         self._continue = True
         self._eventIdData = {}
 
-        # Read/parse the config
-        self.config = Config(configPath)
+        self.config = self.settings_value()
 
         # Get config values
-        self._pluginCollections = [PluginCollection(self, s) for s in self.config.getPluginPaths()]
+        self._pluginCollections = [EventEnginePluginCollection(self, s) for s in self.config.getPluginPaths()]
         self._sg = sg.Shotgun(
             self.config.getShotgunURL(),
             self.config.getEngineScriptName(),
@@ -217,22 +216,22 @@ class Engine(daemonizer.Daemon):
             # Set the root logger for file output.
             rootLogger = logging.getLogger()
             rootLogger.config = self.config
-            _setFilePathOnLogger(rootLogger, self.config.getLogFile())
+            set_file_path_on_logger(rootLogger, self.config.getLogFile())
             print self.config.getLogFile()
 
             # Set the engine logger for email output.
             self.log = logging.getLogger('engine')
-            self.setEmailsOnLogger(self.log, True)
+            self.set_emails_on_logger(self.log, True)
         else:
             # Set the engine logger for file and email output.
             self.log = logging.getLogger('engine')
             self.log.config = self.config
-            _setFilePathOnLogger(self.log, self.config.getLogFile())
-            self.setEmailsOnLogger(self.log, True)
+            set_file_path_on_logger(self.log, self.config.getLogFile())
+            self.set_emails_on_logger(self.log, True)
 
         self.log.setLevel(self.config.getLogLevel())
 
-        super(Engine, self).__init__('shotgunEvent', self.config.getEnginePIDFile())
+        super(EventEngine, self).__init__('shotgunEvent', self.config.getEnginePIDFile())
 
     def start(self, daemonize=True):
         if not daemonize:
@@ -241,11 +240,11 @@ class Engine(daemonizer.Daemon):
             handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
             logging.getLogger().addHandler(handler)
 
-        super(Engine, self).start(daemonize)
+        super(EventEngine, self).start(daemonize)
 
-    def setEmailsOnLogger(self, logger, emails):
+    def set_emails_on_logger(self, logger, emails):
         # Configure the logger for email output
-        _removeHandlersFromLogger(logger, logging.handlers.SMTPHandler)
+        remove_handlers_from_logger(logger, logging.handlers.SMTPHandler)
 
         if emails is False:
             return
@@ -264,7 +263,7 @@ class Engine(daemonizer.Daemon):
             msg = 'Argument emails should be True to use the default addresses, False to not send any emails or a list of recipient addresses. Got %s.'
             raise ValueError(msg % type(emails))
 
-        _addMailHandlerToLogger(logger, smtpServer, fromAddr, toAddrs, emailSubject, username, password)
+        add_mail_handler_to_logger(logger, smtpServer, fromAddr, toAddrs, emailSubject, username, password)
 
     def _run(self):
         """
@@ -283,15 +282,15 @@ class Engine(daemonizer.Daemon):
             for collection in self._pluginCollections:
                 collection.load()
 
-            self._loadEventIdData()
+            self._load_event_id_data()
 
-            self._mainLoop()
+            self._main_loop()
         except KeyboardInterrupt, err:
             self.log.warning('Keyboard interrupt. Cleaning up...')
         except Exception, err:
             self.log.critical('Crash!!!!! Unexpected error (%s) in main loop.\n\n%s', type(err), traceback.format_exc(err))
 
-    def _loadEventIdData(self):
+    def _load_event_id_data(self):
         """
         Load the last processed event id from the disk
 
@@ -314,7 +313,7 @@ class Engine(daemonizer.Daemon):
                     for collection in self._pluginCollections:
                         state = self._eventIdData.get(collection.path)
                         if state:
-                            collection.setState(state)
+                            collection.set_state(state)
                 except pickle.UnpicklingError:
                     fh.close()
 
@@ -323,12 +322,12 @@ class Engine(daemonizer.Daemon):
                     fh = open(eventIdFile)
                     line = fh.readline().strip()
                     if line.isdigit():
-                        # The _loadEventIdData got an old-style id file containing a single
+                        # The _load_event_id_data got an old-style id file containing a single
                         # int which is the last id properly processed.
                         lastEventId = int(line)
                         self.log.debug('Read last event id (%d) from file.', lastEventId)
                         for collection in self._pluginCollections:
-                            collection.setState(lastEventId)
+                            collection.set_state(lastEventId)
                 fh.close()
             except OSError, err:
                 raise EventDaemonError('Could not load event id from file.\n\n%s' % traceback.format_exc(err))
@@ -342,20 +341,20 @@ class Engine(daemonizer.Daemon):
                 try:
                     result = self._sg.find_one("EventLogEntry", filters=[], fields=['id'], order=order)
                 except (sg.ProtocolError, sg.ResponseError, socket.err), err:
-                    conn_attempts = self._checkConnectionAttempts(conn_attempts, str(err))
+                    conn_attempts = self._check_connection_attempts(conn_attempts, str(err))
                 except Exception, err:
                     msg = "Unknown error: %s" % str(err)
-                    conn_attempts = self._checkConnectionAttempts(conn_attempts, msg)
+                    conn_attempts = self._check_connection_attempts(conn_attempts, msg)
                 else:
                     lastEventId = result['id']
                     self.log.info('Last event id (%d) from the Shotgun database.', lastEventId)
 
                     for collection in self._pluginCollections:
-                        collection.setState(lastEventId)
+                        collection.set_state(lastEventId)
 
-            self._saveEventIdData()
+            self._save_event_id_data()
 
-    def _mainLoop(self):
+    def _main_loop(self):
         """
         Run the event processing loop.
 
@@ -380,10 +379,10 @@ class Engine(daemonizer.Daemon):
         self.log.debug('Starting the event processing loop.')
         while self._continue:
             # Process events
-            for event in self._getNewEvents():
+            for event in self._fetch_new_events():
                 for collection in self._pluginCollections:
                     collection.process(event)
-                self._saveEventIdData()
+                self._save_event_id_data()
 
             time.sleep(self._fetch_interval)
 
@@ -392,14 +391,14 @@ class Engine(daemonizer.Daemon):
                 collection.load()
                 
             # Make sure that newly loaded events have proper state.
-            self._loadEventIdData()
+            self._load_event_id_data()
 
         self.log.debug('Shuting down event processing loop.')
 
     def _cleanup(self):
         self._continue = False
 
-    def _getNewEvents(self):
+    def _fetch_new_events(self):
         """
         Fetch new events from Shotgun.
 
@@ -407,7 +406,7 @@ class Engine(daemonizer.Daemon):
         @rtype: I{list} of Shotgun event dictionaries.
         """
         nextEventId = None
-        for newId in [coll.getNextUnprocessedEventId() for coll in self._pluginCollections]:
+        for newId in [coll.next_unprocessed_event_id() for coll in self._pluginCollections]:
             if newId is not None and (nextEventId is None or newId < nextEventId):
                 nextEventId = newId
 
@@ -421,14 +420,14 @@ class Engine(daemonizer.Daemon):
                 try:
                     return self._sg.find("EventLogEntry", filters=filters, fields=fields, order=order, filter_operator='all')
                 except (sg.ProtocolError, sg.ResponseError, socket.error), err:
-                    conn_attempts = self._checkConnectionAttempts(conn_attempts, str(err))
+                    conn_attempts = self._check_connection_attempts(conn_attempts, str(err))
                 except Exception, err:
                     msg = "Unknown error: %s" % str(err)
-                    conn_attempts = self._checkConnectionAttempts(conn_attempts, msg)
+                    conn_attempts = self._check_connection_attempts(conn_attempts, msg)
 
         return []
 
-    def _saveEventIdData(self):
+    def _save_event_id_data(self):
         """
         Save an event Id to persistant storage.
 
@@ -439,7 +438,7 @@ class Engine(daemonizer.Daemon):
 
         if eventIdFile is not None:
             for collection in self._pluginCollections:
-                self._eventIdData[collection.path] = collection.getState()
+                self._eventIdData[collection.path] = collection.state()
 
             for colPath, state in self._eventIdData.items():
                 if state:
@@ -453,7 +452,7 @@ class Engine(daemonizer.Daemon):
             else:
                 self.log.warning('No state was found. Not saving to disk.')
 
-    def _checkConnectionAttempts(self, conn_attempts, msg):
+    def _check_connection_attempts(self, conn_attempts, msg):
         conn_attempts += 1
         if conn_attempts == self._max_conn_retries:
             self.log.error('Unable to connect to Shotgun (attempt %s of %s): %s', conn_attempts, self._max_conn_retries, msg)
@@ -464,7 +463,7 @@ class Engine(daemonizer.Daemon):
         return conn_attempts
 
 
-class PluginCollection(object):
+class EventEnginePluginCollection(object):
     """
     A group of plugin files in a location on the disk.
     """
@@ -472,42 +471,42 @@ class PluginCollection(object):
         if not os.path.isdir(path):
             raise ValueError('Invalid path: %s' % path)
 
-        self._engine = engine
+        self._engine = weakref.proxy(engine)
         self.path = path
         self._plugins = {}
         self._stateData = {}
 
-    def setState(self, state):
+    def set_state(self, state):
         if isinstance(state, int):
             for plugin in self:
-                plugin.setState(state)
-                self._stateData[plugin.getName()] = plugin.getState()
+                plugin.set_state(state)
+                self._stateData[plugin.name()] = plugin.state()
         else:
             self._stateData = state
             for plugin in self:
-                pluginState = self._stateData.get(plugin.getName())
+                pluginState = self._stateData.get(plugin.name())
                 if pluginState:
-                    plugin.setState(pluginState)
+                    plugin.set_state(pluginState)
 
-    def getState(self):
+    def state(self):
         for plugin in self:
-            self._stateData[plugin.getName()] = plugin.getState()
+            self._stateData[plugin.name()] = plugin.state()
         return self._stateData
 
-    def getNextUnprocessedEventId(self):
+    def next_unprocessed_event_id(self):
         eId = None
         for plugin in self:
-            if not plugin.isActive():
+            if not plugin.is_active():
                 continue
 
-            newId = plugin.getNextUnprocessedEventId()
+            newId = plugin.next_unprocessed_event_id()
             if newId is not None and (eId is None or newId < eId):
                 eId = newId
         return eId
 
     def process(self, event):
         for plugin in self:
-            if plugin.isActive():
+            if plugin.is_active():
                 plugin.process(event)
             else:
                 plugin.logger.debug('Skipping: inactive.')
@@ -531,7 +530,7 @@ class PluginCollection(object):
             if basename in self._plugins:
                 newPlugins[basename] = self._plugins[basename]
             else:
-                newPlugins[basename] = Plugin(self._engine, os.path.join(self.path, basename))
+                newPlugins[basename] = EventEnginePlugin(self._engine, os.path.join(self.path, basename))
 
             newPlugins[basename].load()
 
@@ -542,7 +541,7 @@ class PluginCollection(object):
             yield self._plugins[basename]
 
 
-class Plugin(object):
+class EventEnginePlugin(object):
     """
     The plugin class represents a file on disk which contains one or more
     callbacks.
@@ -550,13 +549,13 @@ class Plugin(object):
     def __init__(self, engine, path):
         """
         @param engine: The engine that instanciated this plugin.
-        @type engine: L{Engine}
+        @type engine: L{EventEngine}
         @param path: The path of the plugin file to load.
         @type path: I{str}
 
         @raise ValueError: If the path to the plugin is not a valid file.
         """
-        self._engine = engine
+        self._engine = weakref.proxy(engine)
         self._path = path
 
         if not os.path.isfile(path):
@@ -570,17 +569,17 @@ class Plugin(object):
         self._backlog = {}
 
         # Setup the plugin's logger
-        self.logger = logging.getLogger('plugin.' + self.getName())
+        self.logger = logging.getLogger('plugin.' + self.name())
         self.logger.config = self._engine.config
-        self._engine.setEmailsOnLogger(self.logger, True)
+        self._engine.set_emails_on_logger(self.logger, True)
         self.logger.setLevel(self._engine.config.getLogLevel())
         if self._engine.config.getLogMode() == 1:
-            _setFilePathOnLogger(self.logger, self._engine.config.getLogFile('plugin.' + self.getName()))
+            set_file_path_on_logger(self.logger, self._engine.config.getLogFile('plugin.' + self.name()))
 
-    def getName(self):
+    def name(self):
         return self._pluginName
 
-    def setState(self, state):
+    def set_state(self, state):
         if isinstance(state, int):
             self._lastEventId = state
         elif isinstance(state, types.TupleType):
@@ -588,10 +587,10 @@ class Plugin(object):
         else:
             raise ValueError('Unknown state type: %s.' % type(state))
 
-    def getState(self):
+    def state(self):
         return (self._lastEventId, self._backlog)
 
-    def getNextUnprocessedEventId(self):
+    def next_unprocessed_event_id(self):
         if self._lastEventId:
             nextId = self._lastEventId + 1
         else:
@@ -608,7 +607,7 @@ class Plugin(object):
 
         return nextId
 
-    def isActive(self):
+    def is_active(self):
         """
         Is the current plugin active. Should it's callbacks be run?
 
@@ -617,14 +616,14 @@ class Plugin(object):
         """
         return self._active
 
-    def setEmails(self, *emails):
+    def set_emails(self, *emails):
         """
         Set the email addresses to whom this plugin should send errors.
 
         @param emails: See L{LogFactory.getLogger}'s emails argument for info.
         @type emails: A I{list}/I{tuple} of email addresses or I{bool}.
         """
-        self._engine.setEmailsOnLogger(self.logger, emails)
+        self._engine.set_emails_on_logger(self.logger, emails)
 
     def load(self):
         """
@@ -676,7 +675,7 @@ class Plugin(object):
             self._engine.log.critical('Did not find a registerCallbacks function in plugin at %s.', self._path)
             self._active = False
 
-    def registerCallback(self, sgScriptName, sgScriptKey, callback, matchEvents=None, args=None):
+    def register_callback(self, sgScriptName, sgScriptKey, callback, matchEvents=None, args=None):
         """
         Register a callback in the plugin.
         """
@@ -688,20 +687,20 @@ class Plugin(object):
         if event['id'] in self._backlog:
             if self._process(event):
                 del(self._backlog[event['id']])
-                self._updateLastEventId(event['id'])
+                self._update_last_event_id(event['id'])
         elif self._lastEventId is not None and event['id'] <= self._lastEventId:
             msg = 'Event %d is too old. Last event processed was (%d).'
             self.logger.debug(msg, event['id'], self._lastEventId)
         else:
             if self._process(event):
-                self._updateLastEventId(event['id'])
+                self._update_last_event_id(event['id'])
 
         return self._active
 
     def _process(self, event):
         for callback in self:
-            if callback.isActive():
-                if callback.canProcess(event):
+            if callback.is_active():
+                if callback.can_process(event):
                     msg = 'Dispatching event %d to callback %s.'
                     self.logger.debug(msg, event['id'], str(callback))
                     if not callback.process(event):
@@ -715,7 +714,7 @@ class Plugin(object):
 
         return self._active
 
-    def _updateLastEventId(self, eventId):
+    def _update_last_event_id(self, eventId):
         if self._lastEventId is not None and eventId > self._lastEventId + 1:
             expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
             for skippedId in range(self._lastEventId + 1, eventId):
@@ -736,7 +735,7 @@ class Plugin(object):
         @return: The name of the plugin.
         @rtype: I{str}
         """
-        return self.getName()
+        return self.name()
 
 
 class Registrar(object):
@@ -748,17 +747,7 @@ class Registrar(object):
         Wrap a plugin so it can be passed to a user.
         """
         self._plugin = plugin
-        self._allowed = ['logger', 'setEmails', 'registerCallback']
-
-    def getLogger(self):
-        """
-        Get the logger for this plugin.
-
-        @return: The logger configured for this plugin.
-        @rtype: L{logging.Logger}
-        """
-        # TODO: Fix this ugly protected member access
-        return self.logger
+        self._allowed = ['logger', 'set_emails', 'register_callback']
 
     def __getattr__(self, name):
         if name in self._allowed:
@@ -776,7 +765,7 @@ class Callback(object):
         @param callback: The function to run when a Shotgun event occurs.
         @type callback: A function object.
         @param engine: The engine that will dispatch to this callback.
-        @type engine: L{Engine}.
+        @type engine: L{EventEngine}.
         @param shotgun: The Shotgun instance that will be used to communicate
             with your Shotgun server.
         @type shotgun: L{sg.Shotgun}
@@ -796,7 +785,7 @@ class Callback(object):
         self._name = None
         self._shotgun = shotgun
         self._callback = callback
-        self._engine = engine
+        self._engine = weakref.proxy(engine)
         self._logger = None
         self._matchEvents = matchEvents
         self._args = args
@@ -808,13 +797,13 @@ class Callback(object):
         elif hasattr(callback, '__class__') and hasattr(callback, '__call__'):
             self._name = '%s_%s' % (callback.__class__.__name__, hex(id(callback)))
         else:
-            raise ValueError('registerCallback should be called with a function or a callable object instance as callback argument.')
+            raise ValueError('register_callback should be called with a function or a callable object instance as callback argument.')
 
         # TODO: Get rid of this protected member access
         self._logger = logging.getLogger(plugin.logger.name + '.' + self._name)
         self._logger.config = self._engine.config
 
-    def canProcess(self, event):
+    def can_process(self, event):
         if not self._matchEvents:
             return True
 
@@ -865,7 +854,7 @@ class Callback(object):
 
         return self._active
 
-    def isActive(self):
+    def is_active(self):
         """
         Check if this callback is active, i.e. if events should be passed to it
         for processing.
@@ -896,8 +885,8 @@ class CustomSMTPHandler(logging.handlers.SMTPHandler):
         logging.CRITICAL: 'CRITICAL - Shotgun event daemon.',
     }
 
-    def getSubject(self, record):
-        subject = logging.handlers.SMTPHandler.getSubject(self, record)
+    def subject(self, record):
+        subject = logging.handlers.SMTPHandler.subject(self, record)
         if record.levelno in self.LEVEL_SUBJECTS:
             return subject + ' ' + self.LEVEL_SUBJECTS[record.levelno]
         return subject
@@ -913,7 +902,7 @@ class ConfigError(EventDaemonError):
 
 def main():
     if len(sys.argv) == 2:
-        daemon = Engine(_getConfigPath())
+        daemon = EventEngine(_getConfigPath())
 
         # Find the function to call on the daemon
         action = sys.argv[1]
