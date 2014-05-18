@@ -10,34 +10,41 @@ __all__ = ['EventEnginePlugin']
 
 import os
 import logging
-from collections import namedtuple
 from datetime import (datetime,
                       timedelta)
+
+from butility import abstractmethod
 
 
 class EventEnginePlugin(object):
     """Implements the command pattern to allow the EventEngine to process events based on pre-filtered events
     """
 
-    __slots__ = ('log',
+    __slots__ = ('_log',
                  '_sg',
                  '_active',
                  '_last_event_id',
-                 '_callbacks'          # list of Callback tuples [callback, event_filters]
+                 '_backlog'
                  )
 
-    ## We keep this type simple and do all the processing in the plugin, allowing subtypes to override 
-    # behaviour more easily
-    CallbackType = namedtuple('Callback', ('callable', 'event_filters'))
+
+    # -------------------------
+    ## @name Subclass Interface
+    # @{
+
+    ## To be set in subclass, matching this format
+    # dict('Shotgun_ENTITY_CRUDNAME', attributes|None)
+    event_filters = None
+    
+    ## -- End Subclass Interface -- @}
 
 
-    def __init__(self, sg,log):
+    def __init__(self, sg, log):
         """
         @param sg a shotgun connection instance
         @param log a logger instance to use
         """
         self._active = True
-        self._callbacks = []
         self._last_event_id = None
         self._backlog = {}
 
@@ -53,15 +60,22 @@ class EventEnginePlugin(object):
         """run through all callbacks and process them.
         Disable ourselves on failure
         @return True on success"""
-        for callback in self._callbacks:
-            if self._can_process_callback(callback, event):
-                self._log.debug('Dispatching event %d to callback %s.', event['id'], self._callback_name(callback))
-                self._active |= self._process_callback(callback, event)
-                # even if one fails, we keep going with the remainder of the plugin, do as much as we can
-            else:
-                msg = 'Skipping inactive callback %s in plugin.'
-                self._log.debug(msg, str(callback))
-        # end for each callback
+        if self._can_process_event(event):
+            self._log.debug('Dispatching event %d to callback %s.', event['id'], str(self))
+
+            # set session_uuid for UI updates
+            self._sg.set_session_uuid(event['session_uuid'])
+            try:
+                self.handle_event(self._sg, self._log, event)
+            except Exception:
+                msg = 'An error occured processing an event in callback %s'
+                self._log.critical(msg, str(self), exc_info=True)
+                self._active = False
+            # end log errors
+        else:
+            msg = 'Skipping inactive callback %s in plugin.'
+            self._log.debug(msg, str(callback))
+        # end
 
         return self._active
 
@@ -80,7 +94,15 @@ class EventEnginePlugin(object):
     ## @name Callback Logic
     # @{
 
-    def _can_process_callback(self, callback, event_filters, event):
+    def _event_filters(self):
+        """@return our configured event filters
+        @note subclasses can implement this to support variable filters"""
+        assert self.event_filters, 'event_filters class member must be set'
+        return self.event_filters
+
+    def _can_process_event(self, event):
+        """@return True if the given event matches our event_fitlers"""
+        event_filters = self._event_filters()
         if not event_filters:
             return True
 
@@ -99,34 +121,6 @@ class EventEnginePlugin(object):
 
         return event['attribute_name'] and event['attribute_name'] in attributes
 
-    def _callback_name(self, callback):
-        """@return a nice name for the given callback"""
-        if hasattr(callback, '__name__'):
-            return callback.__name__
-        elif hasattr(callback, '__class__') and hasattr(callback, '__call__'):
-            return '%s_%s' % (callback.__class__.__name__, hex(id(callback)))
-        return str(callback)
-
-    def _process_callback(self, callback, event):
-        """
-        Process an event with the callback.
-
-        If an error occurs, it will be logged appropriately.
-
-        @return True if the callback succeeded
-        """
-        # set session_uuid for UI updates
-        self._sg.set_session_uuid(event['session_uuid'])
-        try:
-            callback.callable(self._sg, self._log, event)
-            return True
-        except Exception:
-            msg = 'An error occured processing an event in callback %s'
-            self._log.critical(msg, self._callback_name(callback), exc_info=True)
-            return False
-        # end log errors
-
-    
     ## -- End Callback Logic -- @}
 
 
@@ -139,15 +133,16 @@ class EventEnginePlugin(object):
             self._last_event_id, self._backlog = state
         else:
             raise ValueError('Unknown state type: %s.' % type(state))
+        # end handle state type
 
     def state(self):
         return (self._last_event_id, self._backlog)
 
     def next_unprocessed_event_id(self):
         if self._last_event_id:
-            nextId = self._last_event_id + 1
+            next_id = self._last_event_id + 1
         else:
-            nextId = None
+            next_id = None
         # end 
 
         now = datetime.now()
@@ -155,26 +150,21 @@ class EventEnginePlugin(object):
             if v < now:
                 self._log.warning('Timeout elapsed on backlog event id %d.', k)
                 del(self._backlog[k])
-            elif nextId is None or k < nextId:
-                nextId = k
+            elif next_id is None or k < next_id:
+                next_id = k
             # end 
         # end for each entry in backlog
 
-        return nextId
+        return next_id
 
     def is_active(self):
         """
-        Is the current plugin active. Should it's callbacks be run?
+        Is the current plugin active. Only active plugins will be run
 
         @return: True if this plugin's callbacks should be run, False otherwise.
         @rtype: I{bool}
         """
         return self._active
-
-    def register_callback(self, callback, match_events=None):
-        """Register a callback in the plugin."""
-        self._callbacks.append(self.CallbackType(callback, match_events))
-        return self
 
     def process(self, event):
         if event['id'] in self._backlog:
@@ -191,8 +181,22 @@ class EventEnginePlugin(object):
 
         return self._active
 
-
     ## -- End Interface -- @}
+
+
+    # -------------------------
+    ## @name Subclass Interface
+    # @{
+    
+    @abstractmethod
+    def handle_event(self, shotgun, log, event):
+        """Perform an operation on the given event
+        @param shotgun a ShotgunConnection for querying additional data
+        @param event a DictObject of the event entity representing the event in question
+        """
+        raise NotImplementedError("to be implemented in subclass")
+
+    ## -- End Subclass Interface -- @}
 
 # end class EventEnginePlugin
 

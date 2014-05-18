@@ -20,7 +20,6 @@ from bshotgun import ProxyShotgunConnection
 from bapp import ApplicationSettingsMixin
 from butility import TerminatableThread
 
-from .plugin import EventEnginePluginCollection
 from .utility import (CustomSMTPHandler,
                       engine_schema,
                       set_file_path_on_logger,
