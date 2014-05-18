@@ -18,6 +18,16 @@ Requirements
 * **Development**
     - [nosetests](https://nose.readthedocs.org/en/latest)
 
+Differences to Original Implementation
+======================================
+
++ much more flexible configuration and plugin system, including environment variable expansion for paths
++ created using test-driven development to help assure it remains usable
++ make customizations and remix it with ease
+- class based plugin's provide better means for customizations (but add complexity)
+- no reloading of settings or plugins at runtime, until this is supported by the underlying frameworks
+
+
 Installation
 ============
 
