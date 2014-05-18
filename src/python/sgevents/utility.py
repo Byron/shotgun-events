@@ -6,7 +6,7 @@
 @author Sebastian Thiel
 @copyright [MIT License](http://www.opensource.org/licenses/mit-license.php)
 """
-__all__ = ['CustomSMTPHandler', 'set_file_path_on_logger', 'EventEngineError']
+__all__ = ['CustomSMTPHandler', 'set_file_path_on_logger', 'set_emails_on_logger', 'EventEngineError']
 
 import logging
 
@@ -61,6 +61,35 @@ def set_file_path_on_logger(logger, path):
     handler = logging.handlers.TimedRotatingFileHandler(path, 'midnight', backupCount=10)
     handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     logger.addHandler(handler)
+
+def set_emails_on_logger(logger, settings, emails):
+    """Configures a logger to either receive emails or not. In any case, existing handlers will be removed
+    @param logger 
+    @param settings obtained from EventEngine.settings_value()
+    @param emails either True, False, or a list of e-mail to addresses to send emails to.
+    If False, existing smtp handlers will be removed. If True, e-email to addresses will be reset to the 
+    ones configured for the engine.
+    Otherwise it is expected to be a list or tuple of e-mail to-addresses."""
+    # Configure the logger for email output
+    remove_handlers_from_logger(logger, logging.handlers.SMTPHandler)
+
+    if emails is False:
+        return
+
+    username = settings.username or None
+    password = settings.password or None
+
+    if emails is True:
+        to_addrs = settings.to
+    elif isinstance(emails, (list, tuple)):
+        to_addrs = emails
+    else:
+        msg = 'Argument emails should be True to use the default addresses, False to not send any emails or a list of recipient addresses. Got %s.'
+        raise ValueError(msg % type(emails))
+    # end handle emails arg
+
+    CustomSMTPHandler.add_to_logger(logger, settings['host'], settings.from_addr, to_addrs, settings.subject,
+                                    username, password)
 
 
 ## -- End Functions -- @}
@@ -119,17 +148,18 @@ Line: %(lineno)d
         """
         Remove all handlers or handlers of a specified type from a logger.
 
-        @param logger: The logger who's handlers should be processed.
-        @type logger: A logging.Logger object
-        @param handlerTypes: A type of handler or list/tuple of types of handlers
+        @param logger The logger who's handlers should be processed.
+        
+        @param handlerTypes A type of handler or list/tuple of types of handlers
             that should be removed from the logger. If I{None}, all handlers are
             removed.
-        @type handlerTypes: L{None}, a logging.Handler subclass or
+        
             I{list}/I{tuple} of logging.Handler subclasses.
         """
         for handler in logger.handlers:
             if handlerTypes is None or isinstance(handler, handlerTypes):
                 logger.removeHandler(handler)
+        # end for each handler
 
 
     @classmethod
@@ -142,10 +172,10 @@ Line: %(lineno)d
 
         @note: Any SMTPHandler already connected to the logger will be removed.
 
-        @param logger: The logger to configure
-        @type logger: A logging.Logger instance
-        @param toAddrs: The addresses to send the email to.
-        @type toAddrs: A list of email addresses that will be passed on to the
+        @param logger The logger to configure
+        
+        @param toAddrs The addresses to send the email to.
+        
             SMTPHandler.
         """
         if not (smtpServer and fromAddr and toAddrs and emailSubject):

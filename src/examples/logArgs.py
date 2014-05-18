@@ -43,9 +43,9 @@ def logArgs(sg, logger, event, args):
     """
     A callback that logs its arguments.
 
-    @param sg: Shotgun instance.
-    @param logger: A preconfigured Python logging.Logger object
-    @param event: A Shotgun event.
-    @param args: The args passed in at the registerCallback call.
+    @param sg Shotgun instance.
+    @param logger A preconfigured Python logging.Logger object
+    @param event A Shotgun event.
+    @param args The args passed in at the registerCallback call.
     """
     logger.info("%s" % str(event))

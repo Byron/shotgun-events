@@ -1,4 +1,30 @@
+shotgun-events-engine:
+  connection:
+    retries: 5
+    retry-every: 60s
+  poll-every: 60s
+  socket-timeout: 60s
+  event-journal-file: $TMP/journal.pickle
+  logging:
+    one-file-per-plugin: yes
+    plugin-log-tree: $TMP
+    path: $TMP
+    email:
+      host: host.intern
+      from: shotgun-events@server.intern
+      subject: argh
+      to:
+        - noone@server.intern
+        - someone@server.intern
+      username: login
+      password: pass
+
+
 packages:
+  shotgun-events:
+    python:
+      plugin_paths:
+        - '{settings-files.test-site.dirname}/plugins'
   nosetests:
     requires:
       - shotgun-events
