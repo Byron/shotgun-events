@@ -6,7 +6,7 @@
 @author Sebastian Thiel
 @copyright [MIT License](http://www.opensource.org/licenses/mit-license.php)
 """
-__all__ = []
+__all__ = ['ShotgunEventEngineCommand']
 
 from bcmd import DaemonCommandMixin
 
@@ -27,6 +27,7 @@ class ShotgunEventEngineCommand(DaemonCommandMixin, Command):
     ThreadType = EventEngine
 
 # end class ShotgunEventEngineCommand
+
 
 if __name__ == '__main__':
     ShotgunEventEngineCommand.main()

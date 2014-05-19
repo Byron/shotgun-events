@@ -32,3 +32,10 @@ packages:
   nosetests:
     requires:
       - shotgun-events
+
+  be:
+    requires:
+      - shotgun-events
+    python:
+      import:
+        - sgevents.plugins.be-shotgun-events
