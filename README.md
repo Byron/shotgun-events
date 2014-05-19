@@ -1,5 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/Byron/shotgun-events/badge.png)](https://coveralls.io/r/Byron/shotgun-events)
-[![Build Status](https://travis-ci.org/Byron/bshotgun.svg?branch=master)](https://travis-ci.org/Byron/shotgun-events)
+[![Build Status](https://travis-ci.org/Byron/shotgun-events.svg?branch=master)](https://travis-ci.org/Byron/shotgun-events)
 
 The shotgun event daemon listens to all shotgun events, and distributes them to one or more plugin event handlers. These may register for a particular kind of event to only receive the ones they are interested in.
 
