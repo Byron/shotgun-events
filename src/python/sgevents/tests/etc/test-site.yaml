@@ -2,22 +2,22 @@ shotgun-events-engine:
   connection:
     retries: 1
     retry-every: 1s
-  poll-every: 1s
+  poll-every: 0s
   socket-timeout: 1s
   event-journal-file: $RW_DIR/journal.pickle
   logging:
     one-file-per-plugin: yes
     plugin-log-tree: $RW_DIR
-    path: $RW_DIR/sgevents.log
-    email:
-      host: host.intern
-      from: shotgun-events@server.intern
-      subject: argh
-      to:
-        - noone@server.intern
-        - someone@server.intern
-      username: login
-      password: pass
+    # path: $RW_DIR/sgevents.log
+    # email:
+    #   host: host.intern
+    #   from: shotgun-events@server.intern
+    #   subject: argh
+    #   to:
+    #     - noone@server.intern
+    #     - someone@server.intern
+    #   username: login
+    #   password: pass
 
 logging:
   verbosity: DEBUG

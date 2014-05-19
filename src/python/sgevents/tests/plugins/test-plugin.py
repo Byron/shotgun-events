@@ -15,15 +15,25 @@ from butility import DictObject
 
 class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
     """just verify it's being called"""
-    __slots__ = ()
+    __slots__ = ('_called')
 
-    event_filters = dict(Shotgun_Shot_Change = list(),
-                         Shotgun_Shot_New = list(),
-                         Shotgun_Shot_Retirement = list(),
-                         Shotgun_Shot_Revival = list())
+    # catch all
+    event_filters = {'*' : list()}
 
     def handle_event(self, shotgun, log, event):
         assert shotgun and log
         assert isinstance(event, DictObject)
+
+        self._called = True
+
+    # -------------------------
+    ## @name Test Interface
+    # @{
+
+    def make_assertion(self):
+        """Verify our state"""
+        assert self._called
+
+    ## -- End Test Interface -- @}
 
 # end class TestEventEnginePlugin

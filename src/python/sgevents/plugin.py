@@ -61,6 +61,7 @@ class EventEnginePlugin(object):
         """run through all callbacks and process them.
         Disable ourselves on failure
         @return True on success"""
+        assert self.is_active(), "shold be active when engine calls us"
         if self._can_process_event(event):
             self._log.debug('Dispatching event %d to callback %s.', event['id'], str(self))
 
@@ -74,8 +75,7 @@ class EventEnginePlugin(object):
                 self._active = False
             # end log errors
         else:
-            msg = 'Skipping inactive callback %s in plugin.'
-            self._log.debug(msg, str(callback))
+            self._log.debug("Ignored event '%s' as it didn't match our filters", event.event_type)
         # end
 
         return self._active
@@ -130,7 +130,9 @@ class EventEnginePlugin(object):
     # @{
     
     def set_state(self, state):
-        if isinstance(state, tuple):
+        if isinstance(state, int):
+            self._last_event_id = state
+        elif isinstance(state, tuple):
             self._last_event_id, self._backlog = state
         else:
             raise ValueError('Unknown state type: %s.' % type(state))

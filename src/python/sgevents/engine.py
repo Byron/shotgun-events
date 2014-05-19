@@ -70,19 +70,13 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
 
         # Setup the logger for the main engine
         self.log = logging.getLogger(self.LOG_NAME)
-        if config.logging['one-file-per-plugin']:
-            # Set the engine logger for file and email output.
+        if config.logging.path:
             set_file_path_on_logger(self.log, config.logging.path.expand_or_raise())
-            set_emails_on_logger(self.log, config.logging.email, True)
-        else:
-             # Set the root logger for file output.
-            rootLogger = logging.getLogger()
-            set_file_path_on_logger(rootLogger, config.logging.path.expand_or_raise())
+        # end don't do path logging unless required
+        # Set the engine logger for email output.
+        set_emails_on_logger(self.log, config.logging.email, True)
 
-            # Set the engine logger for email output.
-            set_emails_on_logger(self.log, config.logging.email, True)
         # end handle initial logging configuration
-
         self._instantiate_plugins(config)
 
 
@@ -115,11 +109,14 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         if num_plugins is None:
             stack.pop()
             self._plugin_context = None
+        else:
+            # Make sure that newly loaded events have proper state.
+            self._load_event_id_data()
         # end remove our context if it's empty
 
     def _iter_plugins(self):
         """@return iterator over all our plugin instances"""
-        return bapp.main().context().instances(EventEnginePlugin)
+        return iter(bapp.main().context().instances(EventEnginePlugin))
 
     def _load_event_id_data(self):
         """
@@ -141,7 +138,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                 try:
                     self._event_id_data = pickle.load(fh)
 
-                    # Provide event id info to the plugin collections. Once
+                    # Provide event id info to the plugin. Once
                     # they've figured out what to do with it, ask them for their
                     # last processed id.
                     for plugin in self._iter_plugins():
@@ -170,11 +167,13 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                 order = [{'column':'id', 'direction':'desc'}]
                 try:
                     result = self._sg.find_one("EventLogEntry", filters=[], fields=['id'], order=order)
-                except (sg.ProtocolError, sg.ResponseError, socket.err) as err:
+                except (sg.ProtocolError, sg.ResponseError, socket.error) as err:
                     conn_attempts = self._check_connection_attempts(conn_attempts, str(err))
                 except Exception as err:
-                    msg = "Unknown error: %s" % str(err)
-                    conn_attempts = self._check_connection_attempts(conn_attempts, msg)
+                    self.log.critical("unhandled exception while fetching events", exc_info=True)
+                    # By all means, we shouldn't have a non-shotgun related error here
+                    # Everything else could be AssertionErrors or something we really don't want to deal with
+                    raise
                 else:
                     last_event_id = result['id']
                     self.log.info('Last event id (%d) from the Shotgun database.', last_event_id)
@@ -183,56 +182,12 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                     # didn't actually process it
                     for collection in self._iter_plugins():
                         collection.set_state(last_event_id)
-                    # end 
+                    # end
                 # end 
             # end
 
             self._save_event_id_data()
         # end no journal exists
-
-    def _main_loop(self):
-        """
-        Run the event processing loop.
-
-        General behavior:
-        - Load plugins from disk - see L{load} method.
-        - Get new events from Shotgun
-        - Loop through events
-        - Loop through each plugin
-        - Loop through each callback
-        - Send the callback an event
-        - Once all callbacks are done in all plugins, save the eventId
-        - Go to the next event
-        - Once all events are processed, wait for the defined fetch interval time and start over.
-
-        Caveats:
-        - If a plugin is deemed "inactive" (an error occured during
-          registration), skip it.
-        - If a callback is deemed "inactive" (an error occured during callback
-          execution), skip it.
-        """
-        self.log.debug('Starting the event processing loop.')
-        while not self._should_terminate():
-            # Process events
-            for event in self._fetch_new_events():
-                for collection in self._iter_plugins():
-                    collection.process(DictObject(event))
-                self._save_event_id_data()
-            # end for each event to dispatch
-
-            config = self.settings_value()
-            time.sleep(config['poll-every'].seconds)
-
-            # Reload plugins
-            for collection in self._iter_plugins():
-                collection.load()
-            # end for each load path to reload
-                
-            # Make sure that newly loaded events have proper state.
-            self._load_event_id_data()
-        # end while we shouldn't terminate
-
-        self.log.debug('Shuting down event processing loop.')
 
     def _fetch_new_events(self):
         """
@@ -262,6 +217,9 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                                       order=order, filter_operator='all')
             except (sg.ProtocolError, sg.ResponseError, socket.error) as err:
                 conn_attempts = self._check_connection_attempts(conn_attempts, str(err))
+            except AssertionError:
+                # let's assume a test went wrong and abort
+                raise
             except Exception as err:
                 msg = "Unknown error: %s" % str(err)
                 conn_attempts = self._check_connection_attempts(conn_attempts, msg)
@@ -318,6 +276,44 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         return conn_attempts
 
 
+    def _prepare_event_processing(self):
+        """Setup everything to be ready for doing work"""
+        config = self.settings_value()
+        socket.setdefaulttimeout(config['socket-timeout'].seconds)
+
+    def _process_events(self):
+        """A single process run, which will poll events and process them, exactly once.
+
+        General behavior:
+        - Load plugins from disk - see L{load} method.
+        - Get new events from Shotgun
+        - Loop through events
+        - Loop through each plugin
+        - Loop through each callback
+        - Send the callback an event
+        - Once all callbacks are done in all plugins, save the eventId
+        - Go to the next event
+        - Once all events are processed, wait for the defined fetch interval time and start over.
+
+        Caveats:
+        - If a plugin is deemed "inactive" (an error occured during
+          registration), skip it.
+        - If a callback is deemed "inactive" (an error occured during callback
+          execution), skip it.
+        """
+        for event in self._fetch_new_events():
+            for plugin in self._iter_plugins():
+                if not plugin.is_active():
+                    log.debug("Skipping inactive plugin %s", plugin)
+                    continue
+                # end ignore inactive
+                plugin.process(DictObject(event))
+            self._save_event_id_data()
+        # end for each event to dispatch
+
+        config = self.settings_value()
+        time.sleep(config['poll-every'].seconds)
+
     # -------------------------
     ## @name Interface
     # @{
@@ -331,15 +327,17 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
 
         @note usually called as part of threading, but will work without it as well
         """
-        config = self.settings_value()
-        socket.setdefaulttimeout(config['socket-timeout'].seconds)
+        self._prepare_event_processing()
 
         # Notify which version of shotgun api we are using
         self.log.info('Using Shotgun version %s' % sg.__version__)
 
         try:
-            self._load_event_id_data()
-            self._main_loop()
+            self.log.debug('Starting the event processing loop.')
+            while not self._should_terminate():
+                self._process_events()
+            # end while we shouldn't terminate
+            self.log.debug('Shuting down event processing loop.')
         except Exception as err:
             self.log.critical('Unexpected error (%s) in main loop.', type(err), exc_info=True)
         # end exception handling

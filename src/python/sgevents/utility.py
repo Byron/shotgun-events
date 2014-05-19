@@ -70,9 +70,6 @@ def set_emails_on_logger(logger, settings, emails):
     If False, existing smtp handlers will be removed. If True, e-email to addresses will be reset to the 
     ones configured for the engine.
     Otherwise it is expected to be a list or tuple of e-mail to-addresses."""
-    # Configure the logger for email output
-    remove_handlers_from_logger(logger, logging.handlers.SMTPHandler)
-
     if emails is False:
         return
 
@@ -88,8 +85,14 @@ def set_emails_on_logger(logger, settings, emails):
         raise ValueError(msg % type(emails))
     # end handle emails arg
 
-    CustomSMTPHandler.add_to_logger(logger, settings['host'], settings['from'], to_addrs, settings.subject,
-                                    username, password)
+    if not (settings['host'] and settings['from'] and to_addr and settings.subject):
+        return
+
+    # Configure the logger for email output
+    remove_handlers_from_logger(logger, logging.handlers.SMTPHandler)
+    CustomSMTPHandler.add_to_logger(logger, settings['host'], settings['from'], 
+                                    to_addrs, settings.subject, username, password)
+    # end 
 
 def remove_handlers_from_logger(logger, handlerTypes=None):
     """
@@ -159,7 +162,7 @@ Line: %(lineno)d
     # @{
 
     @classmethod
-    def add_to_logger(cls, logger, smtpServer, fromAddr, toAddrs, emailSubject, username=None, password=None):
+    def add_to_logger(cls, logger, smtp_host, from_addr, to_addr, email_subject, username=None, password=None):
         """
         Configure a logger with a handler that sends emails to specified
         addresses.
@@ -167,20 +170,13 @@ Line: %(lineno)d
         The format of the email is defined by L{LogFactory.EMAIL_FORMAT_STRING}.
 
         @note: Any SMTPHandler already connected to the logger will be removed.
-
         @param logger The logger to configure
-        
-        @param toAddrs The addresses to send the email to.
-        
-            SMTPHandler.
+        @param to_addr The addresses to send the email to.
         """
-        if not (smtpServer and fromAddr and toAddrs and emailSubject):
-            return
-
         if username and password:
-            mailHandler = cls(smtpServer, fromAddr, toAddrs, emailSubject, (username, password))
+            mailHandler = cls(smtp_host, from_addr, to_addr, email_subject, (username, password))
         else:
-            mailHandler = cls(smtpServer, fromAddr, toAddrs, emailSubject)
+            mailHandler = cls(smtp_host, from_addr, to_addr, email_subject)
         # end use credentials
 
         mailHandler.setLevel(logging.ERROR)
