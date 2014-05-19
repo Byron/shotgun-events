@@ -11,7 +11,7 @@ __all__ = ['with_plugin_application', 'EventsTestCase']
 from functools import wraps
 
 from butility import Path
-from bprocess import ProcessAwareApplication
+from bprocess.tests import PluginLoadingProcessAwareApplication
 from bapp.tests import with_application
 from bapp.tests import preserve_application
 from bshotgun.tests import ShotgunTestCase
@@ -24,7 +24,8 @@ from bshotgun.tests import ShotgunTestCase
 
 def with_plugin_application(fun):
     """Load plugins, and don't breakout of the test sandbox"""
-    return with_application(from_file=__file__, application_type=ProcessAwareApplication)(fun)
+    return with_application(from_file=__file__, application_type=PluginLoadingProcessAwareApplication, 
+                            package_name='shotgun-events')(fun)
 
 ## -- End Decorators -- @}
 
