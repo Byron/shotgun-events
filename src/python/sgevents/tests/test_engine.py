@@ -60,6 +60,17 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
     # make this this works
     set_session_uuid = Mock()
 
+    @classmethod
+    def is_ci_mode(cls):
+        """@return True if we are running on travis"""
+        return 'CI' in os.environ
+
+    def has_database(self):
+        """@return pretends we have one, in case we are in CI mode"""
+        if self.is_ci_mode():
+            return True
+        return super(EventsReadOnlyTestSQLProxyShotgunConnection, self).has_database()
+
     # -------------------------
     ## @name Interface
     # @{
@@ -72,7 +83,7 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
             raise exc
         # end raise on demand
 
-        if 'CONTINUOUS_INTEGRATION' in os.environ:
+        if self.is_ci_mode():
             res = self._records[self.next_event_id - self.first_event_id]
         else:
             res = self.find_one('EventLogEntry', [('id', 'is', self.next_event_id)])
