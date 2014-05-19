@@ -72,7 +72,7 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
             raise exc
         # end raise on demand
 
-        if 'CI' in os.environ:
+        if 'CONTINUOUS_INTEGRATION' in os.environ:
             res = self._records[self.next_event_id - self.first_event_id]
         else:
             res = self.find_one('EventLogEntry', [('id', 'is', self.next_event_id)])
