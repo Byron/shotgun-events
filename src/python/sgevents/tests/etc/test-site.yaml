@@ -9,15 +9,17 @@ shotgun-events-engine:
     one-file-per-plugin: yes
     plugin-log-tree: $RW_DIR
     path: $RW_DIR/sgevents.log
-    email:
-      host: host.intern
-      from: shotgun-events@server.intern
-      subject: argh
-      to:
-        - noone@server.intern
-        - someone@server.intern
-      username: login
-      password: pass
+    # Causes tests to freak out (but work), so it's disabled.
+    # Would need a mocked SMTPHandler, should be easy enough with @patch
+    # email:
+    #   host: host.intern
+    #   from: shotgun-events@server.intern
+    #   subject: argh
+    #   to:
+    #     - noone@server.intern
+    #     - someone@server.intern
+    #   username: login
+    #   password: pass
 
 logging:
   verbosity: DEBUG

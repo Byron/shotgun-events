@@ -1,0 +1,15 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+
+install:
+  - pip install coveralls
+  - pip install git+https://github.com/zzzeek/sqlalchemy.git
+  - pip install git+https://github.com/Byron/bcore.git
+  - pip install git+https://github.com/shotgunsoftware/python-api.git
+  - pip install git+https://github.com/Byron/bshotgun.git
+script:
+  nosetests src/python --with-coverage
+after_success:
+  coveralls
