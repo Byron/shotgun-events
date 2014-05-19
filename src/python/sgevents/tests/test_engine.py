@@ -8,13 +8,16 @@
 """
 __all__ = []
 
+import os
 import socket
 
 from .base import (EventsTestCase,
                    with_plugin_application)
 
-from bshotgun.tests import ReadOnlyTestSQLProxyShotgunConnection
+from bshotgun.tests import (ReadOnlyTestSQLProxyShotgunConnection,
+                            ShotgunTestDatabase)
 from butility.tests import with_rw_directory
+from butility import LazyMixin
 
 from mock import Mock
 
@@ -27,10 +30,11 @@ from sgevents import *
 # ------------------------------------------------------------------------------
 ## @{
 
-class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunConnection):
+class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunConnection, LazyMixin):
     """A connnection made to work for shotgun events"""
     __slots__ = ('next_event_id', 
-                 'next_exception')
+                 'next_exception',
+                 '_records')
 
     # magic values, dependent on actual dataase
     # NOTE: if broken, just use sql to find smallest id
@@ -45,7 +49,15 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
         obj.find = Mock(side_effect=self.next_event_list)
         self._proxy = obj
 
+    def _set_cache_(self, name):
+        if name == '_records':
+            self._records = ShotgunTestDatabase().records('EventLogEntry')
+        else:
+            super(EventsReadOnlyTestSQLProxyShotgunConnection, self)._set_cache_(name)
+        # end
 
+
+    # make this this works
     set_session_uuid = Mock()
 
     # -------------------------
@@ -60,7 +72,11 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
             raise exc
         # end raise on demand
 
-        res = self.find_one('EventLogEntry', [('id', 'is', self.next_event_id)])
+        if 'CI' in os.environ:
+            res = self._records[self.next_event_id - self.first_event_id]
+        else:
+            res = self.find_one('EventLogEntry', [('id', 'is', self.next_event_id)])
+        # end 
         self.next_event_id += 1
         return res
 
