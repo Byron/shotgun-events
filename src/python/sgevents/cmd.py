@@ -10,30 +10,18 @@ __all__ = []
 
 from bcmd import DaemonCommandMixin
 
-import bapp
 from butility import Version
-from be import BeSubCommand
+from bcmd import Command
+
+from .engine import EventEngine
 
 
-class ShotgunEventsBeSubCommand(BeSubCommand, bapp.plugin_type()):
-    """A shotgun events plugin"""
+class ShotgunEventEngineCommand(DaemonCommandMixin, Command):
+    """Makes the events engine available from the commandline"""
     __slots__ = ()
 
     name = 'shotgun-events'
     version = Version('0.1.0')
     description = "polls shotgun events and have plugins react to them"
 
-    def setup_argparser(self, parser):
-        """Setup your flags using argparse"""
-        super(ShotgunEventsBeSubCommand, self).setup_argparser(parser)
-        # parser.add_argument('-v', '--verbose',
-        #                     action='store_true', 
-        #                     default=False, 
-        #                     dest='verbosity',
-        #                     help='enable verbose mode')
-        return self
-
-    def execute(self, args, remaining_args):
-        raise NotImplementedError('tbd')
-        return self.SUCCESS
-
+    ThreadType = EventEngine

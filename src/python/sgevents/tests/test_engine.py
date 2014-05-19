@@ -10,7 +10,7 @@ __all__ = []
 
 import socket
 
-from .base import (EventsTestCaseBase,
+from .base import (EventsTestCase,
                    with_plugin_application)
 
 from bshotgun.tests import ReadOnlyTestSQLProxyShotgunConnection
@@ -77,7 +77,7 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
 
 
 
-class EngineTestCase(EventsTestCaseBase):
+class EngineTestCase(EventsTestCase):
     __slots__ = ()
 
     @with_plugin_application

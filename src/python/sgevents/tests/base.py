@@ -6,7 +6,7 @@
 @author Sebastian Thiel
 @copyright [GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl.html)
 """
-__all__ = ['with_plugin_application', 'EventsTestCaseBase']
+__all__ = ['with_plugin_application', 'EventsTestCase']
 
 from functools import wraps
 
@@ -38,9 +38,9 @@ def with_plugin_application(fun):
 ## -- End Types -- @}
 
 
-class EventsTestCaseBase(ShotgunTestCase):
+class EventsTestCase(ShotgunTestCase):
     """Supports reasonable fixture paths"""
     __slots__ = ()
 
 
-# end class EventsTestCaseBase
+# end class EventsTestCase
