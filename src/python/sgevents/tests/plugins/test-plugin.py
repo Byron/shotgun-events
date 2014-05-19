@@ -15,14 +15,25 @@ from butility import DictObject
 
 class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
     """just verify it's being called"""
-    __slots__ = ('_called')
+    __slots__ = ('_called', 'next_exception')
 
     # catch all
     event_filters = {'*' : list()}
 
+    def __init__(self, *args, **kwargs):
+        super(TestEventEnginePlugin, self).__init__(*args, **kwargs)
+        self.next_exception = None
+        
+
     def handle_event(self, shotgun, log, event):
         assert shotgun and log
         assert isinstance(event, DictObject)
+
+        if self.next_exception:
+            exc = self.next_exception
+            self.next_exception = None
+            raise exc
+        # end 
 
         self._called = True
 
@@ -31,8 +42,11 @@ class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
     # @{
 
     def make_assertion(self):
-        """Verify our state"""
+        """Verify our state, and reset ourselves"""
         assert self._called
+
+        self._called = False
+        self._active = True
 
     ## -- End Test Interface -- @}
 

@@ -1,0 +1,16 @@
+[run]
+source = sgevents
+
+[report]
+omit = 
+	*/yaml*
+	*/tests/*
+    */python?.?/*
+    */site-packages/nose/*
+
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:

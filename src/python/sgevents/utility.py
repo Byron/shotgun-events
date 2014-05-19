@@ -85,7 +85,7 @@ def set_emails_on_logger(logger, settings, emails):
         raise ValueError(msg % type(emails))
     # end handle emails arg
 
-    if not (settings['host'] and settings['from'] and to_addr and settings.subject):
+    if not (settings['host'] and settings['from'] and to_addrs and settings.subject):
         return
 
     # Configure the logger for email output

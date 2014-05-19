@@ -4,7 +4,8 @@
 		{
 			"follow_symlinks": true,
 			"path": "../..",
-			"folder_exclude_patterns" : ["doc", "pages"]
+			"folder_exclude_patterns" : ["doc", "pages", "cover", ".git"],
+			"file_exclude_patterns" : [".coverage"]
 		}
 	]
 }

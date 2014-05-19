@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/Byron/shotgun-events/badge.png)](https://coveralls.io/r/Byron/shotgun-events)
+
 The shotgun event daemon listens to all shotgun events, and distributes them to one or more plugin event handlers. These may register for a particular kind of event to only receive the ones they are interested in.
 
 Thanks to the daemon, you may focus on what you are interested in: handling an event, without dealing with details such as:

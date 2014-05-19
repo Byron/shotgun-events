@@ -62,6 +62,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         @param sg_connection if unset, it will be created from ProxyShotgunConnectionType. Useful for testing,
         as the entire connection can be mocked as needed
         """
+        super(EventEngine, self).__init__()
         self._event_id_data = {}
         self._sg = sg_connection or self.ProxyShotgunConnectionType()
         self._plugin_context = None
@@ -118,6 +119,12 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         """@return iterator over all our plugin instances"""
         return iter(bapp.main().context().instances(EventEnginePlugin))
 
+    @classmethod
+    def _journal_path(cls):
+        """@return path to journal file"""
+        config = cls.settings_value()
+        return config['event-journal-file'].expand_or_raise()
+
     def _load_event_id_data(self):
         """
         Load the last processed event id from the disk
@@ -128,8 +135,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         processing from there.
         @throws EventEngineError
         """
-        config = self.settings_value()
-        event_id_file = config['event-journal-file'].expand_or_raise()
+        event_id_file = self._journal_path()
 
         read_journal = False
         if event_id_file.exists():
@@ -154,7 +160,8 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                 fh.close()
             except OSError as err:
                 # this must stop operation !
-                raise EventDaemonError("Could not open event journal at '%s'.", event_id_file, exc_info=True)
+                msg = "Could not open event journal at '%s'." % event_id_file
+                raise EventDaemonError(msg, exc_info=True)
             # end convert OSErrors
         # end try reading event journal
 
@@ -181,7 +188,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                     # pretend for this was the last id for plugins as well, even though they 
                     # didn't actually process it
                     for collection in self._iter_plugins():
-                        collection.set_state(last_event_id)
+                        collection.set_event_id(last_event_id)
                     # end
                 # end 
             # end
@@ -217,16 +224,12 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                                       order=order, filter_operator='all')
             except (sg.ProtocolError, sg.ResponseError, socket.error) as err:
                 conn_attempts = self._check_connection_attempts(conn_attempts, str(err))
-            except AssertionError:
-                # let's assume a test went wrong and abort
+            except Exception:
+                self.log.critical("unhandled exception while fetching new events", exc_info=True)
                 raise
-            except Exception as err:
-                msg = "Unknown error: %s" % str(err)
-                conn_attempts = self._check_connection_attempts(conn_attempts, msg)
             # end exception handling
         # end query events forever
-
-        return list()
+        assert False, "shouldn't get here"
 
     def _save_event_id_data(self):
         """
@@ -304,7 +307,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         for event in self._fetch_new_events():
             for plugin in self._iter_plugins():
                 if not plugin.is_active():
-                    log.debug("Skipping inactive plugin %s", plugin)
+                    self.log.debug("Skipping inactive plugin %s", plugin)
                     continue
                 # end ignore inactive
                 plugin.process(DictObject(event))

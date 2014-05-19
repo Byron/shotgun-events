@@ -98,7 +98,7 @@ class EventEnginePlugin(object):
     def _event_filters(self):
         """@return our configured event filters
         @note subclasses can implement this to support variable filters"""
-        assert self.event_filters, 'event_filters class member must be set'
+        assert self.event_filters is not None, 'event_filters class member must be set'
         return self.event_filters
 
     def _can_process_event(self, event):
@@ -128,17 +128,22 @@ class EventEnginePlugin(object):
     # ------------------------------
     ## @name Event Engine Interface
     # @{
+
+    def set_event_id(self, id):
+        """Sets our last known event ID to the given one, usually right after we have been loaded"""
+        self._last_event_id = id
     
     def set_state(self, state):
-        if isinstance(state, int):
-            self._last_event_id = state
-        elif isinstance(state, tuple):
+        """Sets the previously persisted state, as returned by state()"""
+        if isinstance(state, tuple):
             self._last_event_id, self._backlog = state
         else:
             raise ValueError('Unknown state type: %s.' % type(state))
         # end handle state type
 
     def state(self):
+        """@return your internal state as defined by you entirely.
+        Must remain compatible to set_state()"""
         return (self._last_event_id, self._backlog)
 
     def state_key(self):
