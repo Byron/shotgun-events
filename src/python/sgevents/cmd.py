@@ -25,3 +25,8 @@ class ShotgunEventEngineCommand(DaemonCommandMixin, Command):
     description = "polls shotgun events and have plugins react to them"
 
     ThreadType = EventEngine
+
+# end class ShotgunEventEngineCommand
+
+if __name__ == '__main__':
+    ShotgunEventEngineCommand.main()

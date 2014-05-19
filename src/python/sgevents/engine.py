@@ -94,7 +94,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
 
         self._plugin_context = stack.push('%s-plugins' % self.LOG_NAME)
         for num_plugins, plugin_type in enumerate(stack.types(EventEnginePlugin)):
-            plugin_prefix = '%s.plugin.%s' % (self.LOG_NAME, plugin_type.plugin_name())
+            plugin_prefix = '%s.plugin.%s.log' % (self.LOG_NAME, plugin_type.plugin_name())
             log = logging.getLogger(plugin_prefix)
             set_emails_on_logger(log, settings.logging.email, True)
             log.setLevel(self.log.level)

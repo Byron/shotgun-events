@@ -14,3 +14,18 @@ packages:
     environment:
       variables:
         PYTHONPATH: 'src/python'
+
+  ###########################
+  shotgun-events-daemon: ###
+  #########################
+    name: Shotgun Events Daemone
+    description: |
+      A commandline utility to control the shotgun events daemon.
+    requires:
+      - python
+      - shotgun-events
+    alias: python
+    arguments:
+      prepend:
+        - -m 
+        - sgevents.cmd
