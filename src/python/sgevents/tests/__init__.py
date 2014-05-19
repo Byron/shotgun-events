@@ -8,14 +8,4 @@
 """
 __all__ = []
 
-import os
-import tempfile
-
-def _initialize():
-    """assure our test suite has a suitable environment"""
-    os.environ['TMP'] = tempfile.gettempdir()
-
-
-_initialize()
-
 

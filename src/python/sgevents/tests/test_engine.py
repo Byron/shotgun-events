@@ -12,6 +12,7 @@ from .base import (EventsTestCaseBase,
                    with_plugin_application)
 
 from bshotgun.tests import ReadOnlyTestSQLProxyShotgunConnection
+from butility.tests import with_rw_directory
 
 # try * import
 from sgevents import *
@@ -40,11 +41,14 @@ class EngineTestCase(EventsTestCaseBase):
     __slots__ = ()
 
     @with_plugin_application
-    def test_base(self):
+    @with_rw_directory
+    def test_base(self, rw_dir):
         sg = EventsReadOnlyTestSQLProxyShotgunConnection()
         engine = EventEngine(sg)
 
         assert engine._plugin_context is not None, "should have found at least one plugin"
+
+
 
 
 # end class EngineTestCase

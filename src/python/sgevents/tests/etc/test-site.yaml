@@ -1,14 +1,14 @@
 shotgun-events-engine:
   connection:
-    retries: 5
-    retry-every: 60s
-  poll-every: 60s
-  socket-timeout: 60s
-  event-journal-file: $TMP/journal.pickle
+    retries: 1
+    retry-every: 1s
+  poll-every: 1s
+  socket-timeout: 1s
+  event-journal-file: $RW_DIR/journal.pickle
   logging:
     one-file-per-plugin: yes
-    plugin-log-tree: $TMP
-    path: $TMP/sgevents.log
+    plugin-log-tree: $RW_DIR
+    path: $RW_DIR/sgevents.log
     email:
       host: host.intern
       from: shotgun-events@server.intern
@@ -24,6 +24,8 @@ logging:
 
 packages:
   shotgun-events:
+    requires:
+      - mock
     python:
       plugin_paths:
         - '{settings-files.test-site.dirname.dirname}/plugins'
