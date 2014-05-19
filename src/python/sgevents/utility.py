@@ -65,7 +65,7 @@ def set_file_path_on_logger(logger, path):
 def set_emails_on_logger(logger, settings, emails):
     """Configures a logger to either receive emails or not. In any case, existing handlers will be removed
     @param logger 
-    @param settings obtained from EventEngine.settings_value()
+    @param settings obtained from EventEngine.settings_value().logging.email
     @param emails either True, False, or a list of e-mail to addresses to send emails to.
     If False, existing smtp handlers will be removed. If True, e-email to addresses will be reset to the 
     ones configured for the engine.
@@ -88,9 +88,25 @@ def set_emails_on_logger(logger, settings, emails):
         raise ValueError(msg % type(emails))
     # end handle emails arg
 
-    CustomSMTPHandler.add_to_logger(logger, settings['host'], settings.from_addr, to_addrs, settings.subject,
+    CustomSMTPHandler.add_to_logger(logger, settings['host'], settings['from'], to_addrs, settings.subject,
                                     username, password)
 
+def remove_handlers_from_logger(logger, handlerTypes=None):
+    """
+    Remove all handlers or handlers of a specified type from a logger.
+
+    @param logger The logger who's handlers should be processed.
+    
+    @param handlerTypes A type of handler or list/tuple of types of handlers
+        that should be removed from the logger. If I{None}, all handlers are
+        removed.
+    
+        I{list}/I{tuple} of logging.Handler subclasses.
+    """
+    for handler in logger.handlers:
+        if handlerTypes is None or isinstance(handler, handlerTypes):
+            logger.removeHandler(handler)
+    # end for each handler
 
 ## -- End Functions -- @}
 
@@ -141,26 +157,6 @@ Line: %(lineno)d
     ## @name Subclass Interface
     # For potential overrides in subclasses
     # @{
-
-
-    @classmethod
-    def remove_handlers_from_logger(cls, logger, handlerTypes=None):
-        """
-        Remove all handlers or handlers of a specified type from a logger.
-
-        @param logger The logger who's handlers should be processed.
-        
-        @param handlerTypes A type of handler or list/tuple of types of handlers
-            that should be removed from the logger. If I{None}, all handlers are
-            removed.
-        
-            I{list}/I{tuple} of logging.Handler subclasses.
-        """
-        for handler in logger.handlers:
-            if handlerTypes is None or isinstance(handler, handlerTypes):
-                logger.removeHandler(handler)
-        # end for each handler
-
 
     @classmethod
     def add_to_logger(cls, logger, smtpServer, fromAddr, toAddrs, emailSubject, username=None, password=None):

@@ -16,10 +16,13 @@ import cPickle as pickle
 
 import shotgun_api3 as sg
 
+import bapp
 from bshotgun import ProxyShotgunConnection
 from bapp import ApplicationSettingsMixin
-from butility import TerminatableThread
+from butility import (TerminatableThread,
+                      DictObject)
 
+from .plugin import EventEnginePlugin
 from .utility import (CustomSMTPHandler,
                       engine_schema,
                       set_file_path_on_logger,
@@ -36,7 +39,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
 
     __slots__ = ('log',
                  '_event_id_data',
-                 '_app',
+                 '_plugin_context',
                  '_sg')
 
     _schema = engine_schema
@@ -61,6 +64,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         """
         self._event_id_data = {}
         self._sg = sg_connection or self.ProxyShotgunConnectionType()
+        self._plugin_context = None
 
         config = self.settings_value()
 
@@ -68,32 +72,54 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         self.log = logging.getLogger(self.LOG_NAME)
         if config.logging['one-file-per-plugin']:
             # Set the engine logger for file and email output.
-            set_file_path_on_logger(self.log, config.logging.path.expandvars())
-            set_emails_on_logger(self.log, config, True)
+            set_file_path_on_logger(self.log, config.logging.path.expand_or_raise())
+            set_emails_on_logger(self.log, config.logging.email, True)
         else:
              # Set the root logger for file output.
             rootLogger = logging.getLogger()
-            set_file_path_on_logger(rootLogger, config.logging.path.expandvars())
+            set_file_path_on_logger(rootLogger, config.logging.path.expand_or_raise())
 
             # Set the engine logger for email output.
-            set_emails_on_logger(self.log, config, True)
+            set_emails_on_logger(self.log, config.logging.email, True)
         # end handle initial logging configuration
+
+        self._instantiate_plugins(config)
 
 
     def _instantiate_plugins(self, settings):
         """Create compatible plugin instances and put them onto their own environment.
         We will initialize them with everything they need"""
-        raise NotImplementedError("todo")
-        logging.getLogger('plugin.' + self.plugin_name())
-        set_emails_on_logger(self.log, settings, True)
-        self.log.setLevel(logging.getLogger().level)
+        num_plugins = None
 
-        if settings.getLogMode() == 1:
-            set_file_path_on_logger(self.log, self._engine.config.getLogFile('plugin.' + self.plugin_name()))
+        # This would allow us to reload, assuming the state was saved previously
+        stack = bapp.main().context()
+        if self._plugin_context:
+            stack.remove(self._plugin_context)
+        # end pop previous context
+
+        self._plugin_context = stack.push('%s-plugins' % self.LOG_NAME)
+        for num_plugins, plugin_type in enumerate(stack.types(EventEnginePlugin)):
+            plugin_prefix = '%s.plugin.%s' % (self.LOG_NAME, plugin_type.plugin_name())
+            log = logging.getLogger(plugin_prefix)
+            set_emails_on_logger(log, settings.logging.email, True)
+            log.setLevel(self.log.level)
+            assert plugin_type._auto_register_instance_, 'plugin-instances are expected to be auto-registered'
+
+            if settings.logging['one-file-per-plugin']:
+                set_file_path_on_logger(log, settings.logging['plugin-log-tree'].expand_or_raise() / plugin_prefix)
+            # end setup file logging
+
+            plugin_type(self._sg, log)
+        # end for each plugin to create
+
+        if num_plugins is None:
+            stack.pop()
+            self._plugin_context = None
+        # end remove our context if it's empty
 
     def _iter_plugins(self):
         """@return iterator over all our plugin instances"""
-        raise NotImplementedError("todo")
+        return bapp.main().context().instances(EventEnginePlugin)
 
     def _load_event_id_data(self):
         """
@@ -106,7 +132,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         @throws EventEngineError
         """
         config = self.settings_value()
-        event_id_file = config['event-journal-file'].expandvars()
+        event_id_file = config['event-journal-file'].expand_or_raise()
 
         read_journal = False
         if event_id_file.exists():
@@ -118,10 +144,10 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
                     # Provide event id info to the plugin collections. Once
                     # they've figured out what to do with it, ask them for their
                     # last processed id.
-                    for collection in self._iter_plugins():
-                        state = self._event_id_data.get(collection.path)
+                    for plugin in self._iter_plugins():
+                        state = self._event_id_data.get(plugin.state_key())
                         if state:
-                            collection.set_state(state)
+                            plugin.set_state(state)
                         # end have state for collection
                     # end for each collection
                     read_journal = True
@@ -190,7 +216,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
             # Process events
             for event in self._fetch_new_events():
                 for collection in self._iter_plugins():
-                    collection.process(event)
+                    collection.process(DictObject(event))
                 self._save_event_id_data()
             # end for each event to dispatch
 
@@ -251,14 +277,17 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         Next time the engine is started it will try to read the event id from
         this location to know at which event it should start processing.
         """
-        event_id_file = self.settings_value()['event-journal-file'].expandvars()
+        event_id_file = self.settings_value()['event-journal-file'].expand_or_raise()
 
         if not event_id_file:
             return
         # end bail out early
 
-        for collection in self._iter_plugins():
-            self._event_id_data[collection.path] = collection.state()
+        self._event_id_data.clear()
+        for plugin in self._iter_plugins():
+            key = plugin.state_key()
+            assert key not in self._event_id_data, "duplicate plugin ID '%s' - cannot operate like this" % key
+            self._event_id_data[key] = plugin.state()
         # end gather plugin state
 
         if not self._event_id_data:
@@ -309,11 +338,7 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         self.log.info('Using Shotgun version %s' % sg.__version__)
 
         try:
-            for collection in self._iter_plugins():
-                collection.load()
-
             self._load_event_id_data()
-
             self._main_loop()
         except Exception as err:
             self.log.critical('Unexpected error (%s) in main loop.', type(err), exc_info=True)

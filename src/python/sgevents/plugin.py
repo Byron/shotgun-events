@@ -33,7 +33,8 @@ class EventEnginePlugin(object):
     # @{
 
     ## To be set in subclass, matching this format
-    # dict('Shotgun_ENTITY_CRUDNAME', attributes|None)
+    # dict('APPLICATION_ENTITYTYPE_ACTION', attributes|None), 
+    # see https://github.com/shotgunsoftware/python-api/wiki/Event-Types for more information
     event_filters = None
     
     ## -- End Subclass Interface -- @}
@@ -137,6 +138,11 @@ class EventEnginePlugin(object):
 
     def state(self):
         return (self._last_event_id, self._backlog)
+
+    def state_key(self):
+        """@return a unique key identifying the state we return, for storage in a dict.
+        It must most uniquely identify our state, as it should remain associated with this plugin type"""
+        return str(self)
 
     def next_unprocessed_event_id(self):
         if self._last_event_id:

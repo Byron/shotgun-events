@@ -8,7 +8,8 @@
 """
 __all__ = []
 
-from .base import EventsTestCaseBase
+from .base import (EventsTestCaseBase,
+                   with_plugin_application)
 
 from bshotgun.tests import ReadOnlyTestSQLProxyShotgunConnection
 
@@ -38,9 +39,12 @@ class EventsReadOnlyTestSQLProxyShotgunConnection(ReadOnlyTestSQLProxyShotgunCon
 class EngineTestCase(EventsTestCaseBase):
     __slots__ = ()
 
-
+    @with_plugin_application
     def test_base(self):
         sg = EventsReadOnlyTestSQLProxyShotgunConnection()
         engine = EventEngine(sg)
+
+        assert engine._plugin_context is not None, "should have found at least one plugin"
+
 
 # end class EngineTestCase
