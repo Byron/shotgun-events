@@ -1,0 +1,29 @@
+<snippet>
+  <!-- Example: Hello, ${1:this} is a ${2:snippet}. -->
+  <content><![CDATA[
+import bapp
+from sgevents import EventEnginePlugin
+
+
+class ${1:Name}EventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
+    """${2:@todo description}"""
+    __slots__ = ()
+
+    ## The events we want to register to
+    # dict('APPLICATION_ENTITYTYPE_ACTION', [attribute, ...]|None,)
+    # see https://github.com/shotgunsoftware/python-api/wiki/Event-Types for more information
+    # This one get's all events
+    event_filters = {'*' : list()}
+
+    def handle_event(self, shotgun, log, event):
+        ${0:raise NotImplementedError("todo")}
+
+# end class ${1}EventEnginePlugin
+
+]]></content>
+  <!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+  <tabTrigger>shotguneventhandler</tabTrigger>
+  <description>A new plugin for the shotgun event engine</description>
+  <!-- Optional: Set a scope to limit where the snippet will trigger -->
+  <scope>source.python</scope>
+</snippet>
