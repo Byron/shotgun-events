@@ -14,7 +14,7 @@ except ImportError:
 #END handle yaml
 
 
-class EventRecordingEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
+class EventRecorder(EventEnginePlugin, bapp.plugin_type()):
 	"""Record events taken from the daemon
 	Configure the script using the invariants at the top of the file.
 	Then take the recordings of the events as fixtures into your test suite.
@@ -48,4 +48,4 @@ class EventRecordingEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
 			log.debug(pprint.pformat(event))
 		#END debug logging
 
-# end class EventRecordingEventEnginePlugin
+# end class EventRecorder

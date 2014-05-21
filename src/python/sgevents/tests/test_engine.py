@@ -191,7 +191,8 @@ class EngineTestCase(EventsTestCase):
             sg = EventsReadOnlyTestSQLProxyShotgunConnection()
             engine = EventEngine(sg)
 
-            for eid in range(100):
+            for eid in range(1, 1000, 100):
+                sg.next_event_id = sg.first_event_id + eid
                 engine._process_events()
             # end 
         finally:
