@@ -9,13 +9,14 @@
 __all__ = []
 
 import bapp
-from sgevents import EventEnginePlugin
+from sgevents import (EventEnginePlugin,
+                      with_global_event_application)
 from butility import DictObject
 
 
 class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
     """just verify it's being called"""
-    __slots__ = ('_called', 'next_exception')
+    __slots__ = ('_called', 'next_exception', '_application_called')
 
     # catch all
     event_filters = {'*' : list()}
@@ -25,6 +26,7 @@ class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
         self.next_exception = None
         
 
+    @with_global_event_application
     def handle_event(self, shotgun, log, event):
         assert shotgun and log
         assert isinstance(event, DictObject)
@@ -37,6 +39,10 @@ class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
 
         self._called = True
 
+    def event_application(self, shotgun, log, event):
+        self._application_called = True
+        return super(TestEventEnginePlugin, self).event_application(shotgun, log, event)
+
     # -------------------------
     ## @name Test Interface
     # @{
@@ -44,8 +50,9 @@ class TestEventEnginePlugin(EventEnginePlugin, bapp.plugin_type()):
     def make_assertion(self):
         """Verify our state, and reset ourselves"""
         assert self._called
+        assert self._application_called
 
-        self._called = False
+        self._application_called = self._called = False
         self._active = True
 
     ## -- End Test Interface -- @}

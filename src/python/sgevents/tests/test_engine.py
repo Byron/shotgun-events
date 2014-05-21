@@ -11,13 +11,18 @@ __all__ = []
 import os
 import socket
 
+import bapp
+
 from .base import (EventsTestCase,
                    with_plugin_application)
 
 from bshotgun.tests import (ReadOnlyTestSQLProxyShotgunConnection,
                             ShotgunTestDatabase)
 from butility.tests import with_rw_directory
-from butility import LazyMixin
+from bapp.tests import with_application
+from butility import (LazyMixin,
+                      PythonFileLoader,
+                      Path)
 
 from mock import Mock
 
@@ -162,5 +167,35 @@ class EngineTestCase(EventsTestCase):
         test_plugin.event_filters = {'Shotgun_Shot_Change' : ['sg_cut_in']}
         engine._process_events()
 
+    @with_application(from_file=__file__)
+    @with_rw_directory
+    def test_plugins(self, rw_dir):
+        """load all known plugins and dispatch some events"""
+        def raiser(py_file, mod_name):
+            raise AssertionError("loading of plugin '%s' failed")
+        # end 
+
+        prev_dir = os.getcwd()
+        bapp.main().context().push('example plugins')
+
+        plugin_path = Path(__file__).dirname().dirname() / 'plugins'
+        examples_path = plugin_path.dirname().dirname().dirname() / 'examples'
+
+        for path in (plugin_path, examples_path):
+            assert path.isdir()
+            assert PythonFileLoader.load_files(path, on_error=raiser)
+        # end for each path to load plugins from
+
+        try:
+            os.chdir(rw_dir)
+            sg = EventsReadOnlyTestSQLProxyShotgunConnection()
+            engine = EventEngine(sg)
+
+            for eid in range(100):
+                engine._process_events()
+            # end 
+        finally:
+            os.chdir(prev_dir)
+        # end reset cwd
 
 # end class EngineTestCase

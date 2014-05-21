@@ -6,15 +6,52 @@
 @author Sebastian Thiel
 @copyright [MIT License](http://www.opensource.org/licenses/mit-license.php)
 """
-__all__ = ['EventEnginePlugin']
+__all__ = ['EventEnginePlugin', 'with_event_application', 'with_global_event_application']
 
 import os
 import logging
 from datetime import (datetime,
                       timedelta)
 
-from butility import abstractmethod
+import bapp
+from bapp import preserve_application
+from butility import (abstractmethod,
+                      wraps)
 
+
+# ==============================================================================
+## @name Decorators
+# ------------------------------------------------------------------------------
+## @{
+
+def with_event_application(fun):
+    """Inserts an Application instance as first argument to the wrapped handle_event() method.
+    The function is assumed to be on an EventEnginePlugin, which will obtain the Application using the
+    event_application() call"""
+    @wraps(fun)
+    def wrapper(self, shotgun, log, event):
+        app = self.event_application(shotgun, log, event)
+        return fun(self, app, shotgun, log, event)
+    # end wrapper
+    return wrapper
+
+def with_global_event_application(fun):
+    """Similar to with_event_application, but will not alter the method signature, and set the new 
+    Application as global application, returned by bapp.main(), for the runtime of the wrapped method"""
+    def internal(self, application, shotgun, log, event):
+        bapp.Application.main = application
+        return fun(self, shotgun, log, event)
+    # end internal
+    return preserve_application(with_event_application(internal))
+
+## -- End Decorators -- @}
+
+
+
+# ==============================================================================
+## @name Type
+# ------------------------------------------------------------------------------
+## @{
 
 class EventEnginePlugin(object):
     """Implements the command pattern to allow the EventEngine to process events based on pre-filtered events
@@ -98,7 +135,7 @@ class EventEnginePlugin(object):
     def _event_filters(self):
         """@return our configured event filters
         @note subclasses can implement this to support variable filters"""
-        assert self.event_filters is not None, 'event_filters class member must be set'
+        assert self.event_filters is not None, 'event_filters class member must be set, can be empty dict to catch all'
         return self.event_filters
 
     def _can_process_event(self, event):
@@ -206,10 +243,23 @@ class EventEnginePlugin(object):
         """Perform an operation on the given event
         @param shotgun a ShotgunConnection for querying additional data
         @param event a DictObject of the event entity representing the event in question
+        @note your context will by default be the one your Application started up with. However, 
+        it might not be suitable for processing the given event. Instead, use the with_event_application()
+        wrapper to produce a suitable one. Code processing events shouldn't rely on the global Application
+        instance, but instead have it handed over to it. That way, you are compatible to parallel event 
+        execution.
+        Otherwise you may consider using the with_global_event_application decorator
         """
         raise NotImplementedError("to be implemented in subclass")
+
+
+    def event_application(self, shotgun, log, event):
+        """@return an Application instasnce suitable for providing context for the given event
+        @note default implementation just returns the active global instance."""
+        return bapp.main()
 
     ## -- End Subclass Interface -- @}
 
 # end class EventEnginePlugin
 
+## -- End Type -- @}

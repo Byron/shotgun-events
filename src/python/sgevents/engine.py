@@ -201,7 +201,6 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         Fetch new events from Shotgun.
 
         @return: Recent events that need to be processed by the engine.
-        @rtype: I{list} of Shotgun event dictionaries.
         """
         next_event_id = None
         for new_id in [coll.next_unprocessed_event_id() for coll in self._iter_plugins()]:
@@ -305,12 +304,16 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
           execution), skip it.
         """
         for event in self._fetch_new_events():
+            if event is None:
+                continue
+            # end it can be that we don't get anything (usually in test-cases that iterate through a range)
+            event = DictObject(event)
             for plugin in self._iter_plugins():
                 if not plugin.is_active():
                     self.log.debug("Skipping inactive plugin %s", plugin)
                     continue
                 # end ignore inactive
-                plugin.process(DictObject(event))
+                plugin.process(event)
             self._save_event_id_data()
         # end for each event to dispatch
 
