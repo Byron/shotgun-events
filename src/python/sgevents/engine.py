@@ -20,7 +20,8 @@ import bapp
 from bshotgun import ProxyShotgunConnection
 from bapp import ApplicationSettingsMixin
 from butility import (TerminatableThread,
-                      DictObject)
+                      DictObject,
+                      Path)
 
 from .plugin import EventEnginePlugin
 from .utility import (CustomSMTPHandler,
@@ -119,11 +120,15 @@ class EventEngine(TerminatableThread, ApplicationSettingsMixin):
         """@return iterator over all our plugin instances"""
         return iter(bapp.main().context().instances(EventEnginePlugin))
 
-    @classmethod
-    def _journal_path(cls):
+    def _journal_path(self):
         """@return path to journal file"""
-        config = cls.settings_value()
-        return config['event-journal-file'].expand_or_raise()
+        config = self.settings_value()
+        res = config['event-journal-file']
+        if not res:
+            res = Path('~/.sg-events-daemon.journal')
+            self.log.info("event-journal-file not configured, defaulting to '%s'", res)
+        # end try to use a reasonable value
+        return res.expand_or_raise()
 
     def _load_event_id_data(self):
         """
