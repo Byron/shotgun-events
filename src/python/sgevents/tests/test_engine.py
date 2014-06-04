@@ -21,7 +21,7 @@ from bshotgun.tests import (ReadOnlyTestSQLProxyShotgunConnection,
 from butility.tests import with_rw_directory
 from bapp.tests import with_application
 from butility import (LazyMixin,
-                      PythonFileLoader,
+                      load_files,
                       Path)
 
 from mock import Mock
@@ -183,7 +183,7 @@ class EngineTestCase(EventsTestCase):
 
         for path in (plugin_path, examples_path):
             assert path.isdir()
-            assert PythonFileLoader.load_files(path, on_error=raiser)
+            assert load_files(path, on_error=raiser)
         # end for each path to load plugins from
 
         try:
