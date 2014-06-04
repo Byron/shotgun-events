@@ -254,7 +254,7 @@ class EventEnginePlugin(object):
 
 
     def event_application(self, shotgun, log, event):
-        """@return an Application instasnce suitable for providing context for the given event
+        """@return an Application instance suitable for providing context for the given event
         @note default implementation just returns the active global instance."""
         return bapp.main()
 
