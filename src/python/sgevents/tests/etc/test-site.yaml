@@ -30,7 +30,7 @@ packages:
       - mock
     python:
       plugin_paths:
-        - '{settings-files.test-site.dirname.dirname}/plugins'
+        - '{yaml.test-site.dirname.dirname}/plugins'
   nosetests:
     requires:
       - shotgun-events

@@ -3,7 +3,7 @@ packages:
   shotgun-events:  ####
   ####################
     trees:
-      - '{settings-files.sgevents.dirname.dirname}'
+      - '{yaml.sgevents.dirname.dirname}'
     name: Shotgun Events Engine
     description: |
       A framework for processing of shotgun events, and for doing so safely.
